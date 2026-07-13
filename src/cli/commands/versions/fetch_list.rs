@@ -1,4 +1,35 @@
 use crate::core::{types::VersionType, version::{fetch_list, strip_version}};
+use clap::Args;
+
+#[derive(Args, Debug)]
+pub struct FetchListArgs {
+    #[arg(short, long, value_enum, default_value_t = VersionType::Release)]
+    pub r#type: VersionType,
+
+    #[arg(short, long, default_value_t = 0)]
+    pub page: u32,
+
+    #[arg(short, long, default_value_t = 10)]
+    pub count: u32,
+
+    #[arg(short, long)]
+    pub json: bool,
+
+    #[arg(long, help = "Include 'id' field in the output")]
+    pub show_id: bool,
+
+    #[arg(long, help = "Include 'releaseTime' field in the output")]
+    pub show_release_time: bool,
+
+    #[arg(long, help = "Include 'time' field in the output")]
+    pub show_time: bool,
+
+    #[arg(long, help = "Include 'type' field in the output")]
+    pub show_type: bool,
+
+    #[arg(long, help = "Include 'url' field in the output")]
+    pub show_url: bool,
+}
 
 pub async fn handle(
     version_type: VersionType, 
