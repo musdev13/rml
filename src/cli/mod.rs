@@ -12,6 +12,10 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     Test,
+    Init {
+        #[arg(short, long)]
+        force: bool,
+    },
 }
 
 pub fn handle_cli() -> bool {
@@ -21,6 +25,9 @@ pub fn handle_cli() -> bool {
         match command {
             Commands::Test => {
                 commands::test::handle();
+            },
+            Commands::Init { force } => {
+                commands::init::handle(force);
             }
         }
         true
