@@ -2,8 +2,9 @@ mod core;
 mod tui;
 mod cli;
 
-fn main() {
-    if !cli::handle_cli() {
+#[tokio::main]
+async fn main() {
+    if !cli::handle_cli().await {
         tui::run_tui();
     }
 }

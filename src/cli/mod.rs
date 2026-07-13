@@ -1,37 +1,16 @@
-use clap::{Parser, Subcommand};
+use clap::Parser;
 
-pub mod commands;
+mod commands;
+mod handler;
+
+pub use handler::handle_cli;
+
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: Option<Commands>,
+    pub command: Option<commands::Commands>,
 }
 
-#[derive(Subcommand)]
-pub enum Commands {
-    Test,
-    Init {
-        #[arg(short, long)]
-        force: bool,
-    },
-}
 
-pub fn handle_cli() -> bool {
-    let args = Cli::parse();
-
-    if let Some(command) = args.command {
-        match command {
-            Commands::Test => {
-                commands::test::handle();
-            },
-            Commands::Init { force } => {
-                commands::init::handle(force);
-            }
-        }
-        true
-    } else {
-        false
-    }
-}
