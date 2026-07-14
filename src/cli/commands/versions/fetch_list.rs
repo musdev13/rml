@@ -1,5 +1,4 @@
 use clap::Args;
-use serde_json::Value;
 use crate::core::{
     types::VersionType,
     version::{fetch_list, sort_by_type, strip_version},
@@ -68,47 +67,9 @@ pub async fn handle(
             println!("no versions available on page {}.", page);
             return;
         }
-
         println!("\n--- versions list (page {}, items: {}) ---", page, striped_versions.len());
+        musutils::vec::print_json_as_table(&striped_versions);
 
-        let keys: Vec<String> = match striped_versions[0].as_object() {
-            Some(obj) => obj.keys().cloned().collect(),
-            None => vec![],
-        };
-
-        if keys.is_empty() {
-            println!("no fields to display");
-            return;
-        }
-
-        let header = keys
-            .iter()
-            .map(|k| format!("{:<25}", k))
-            .collect::<Vec<String>>()
-            .join(" | ");
-        
-        let line_len = header.len();
-        println!("{}", header);
-        println!("{}", "-".repeat(line_len));
-
-        for v in &striped_versions {
-            if let Some(obj) = v.as_object() {
-                let row = keys
-                    .iter()
-                    .map(|k| {
-                        let val_str = match obj.get(k) {
-                            Some(Value::String(s)) => s.clone(),
-                            Some(other) => other.to_string(),
-                            None => "N/A".to_string(),
-                        };
-                        format!("{:<25}", val_str)
-                    })
-                    .collect::<Vec<String>>()
-                    .join(" | ");
-                
-                println!("{}", row);
-            }
-        }
-        println!("{}\n", "-".repeat(line_len));
+        println!();
     }
 }
