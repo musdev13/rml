@@ -3,7 +3,7 @@ use std::sync::LazyLock;
 
 pub static DEFAULT_PATHS_CONFIG: LazyLock<Value> = LazyLock::new(|| {
     json!({
-        "verisons_path": "~/rml/versions",
+        "versions_path": "~/rml/versions",
         "assets_path": "~/rml/assets",
         "libs_path": "~/rml/libs"
     })
