@@ -1,10 +1,14 @@
-use crate::core::{types::VersionType, version::{fetch_list, strip_version}};
 use clap::Args;
+use serde_json::Value;
+use crate::core::{
+    types::VersionType,
+    version::{fetch_list, sort_by_type, strip_version},
+};
 
 #[derive(Args, Debug)]
 pub struct FetchListArgs {
-    #[arg(short, long, value_enum, default_value_t = VersionType::Release)]
-    pub r#type: VersionType,
+    #[arg(short, long, value_enum)]
+    pub r#type: Option<VersionType>,
 
     #[arg(short, long, default_value_t = 0)]
     pub page: u32,
@@ -32,7 +36,7 @@ pub struct FetchListArgs {
 }
 
 pub async fn handle(
-    version_type: VersionType, 
+    version_type: Option<VersionType>, // Теперь тут Option
     page: u32, 
     count: u32, 
     json: bool,
@@ -42,9 +46,14 @@ pub async fn handle(
     r#type: bool,
     url: bool,
 ) {
-    let versions = fetch_list(version_type).await;
+    let all_versions = fetch_list().await;
+    let filtered_versions = match version_type {
+        Some(t) => sort_by_type(&all_versions, t),
+        None => all_versions,
+    };
+    let paged_versions = musutils::vec::get_page(&filtered_versions, page, count);
     let striped_versions = strip_version(
-        &musutils::vec::get_page(&versions, page, count), 
+        &paged_versions, 
         id, 
         release_time, 
         time, 
@@ -88,7 +97,7 @@ pub async fn handle(
                     .iter()
                     .map(|k| {
                         let val_str = match obj.get(k) {
-                            Some(serde_json::Value::String(s)) => s.clone(),
+                            Some(Value::String(s)) => s.clone(),
                             Some(other) => other.to_string(),
                             None => "N/A".to_string(),
                         };

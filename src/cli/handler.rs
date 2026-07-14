@@ -38,6 +38,9 @@ pub async fn handle_cli() -> bool {
                         v_type, 
                         url
                     ).await;
+                },
+                VersionsCommands::Install(args) => {
+                    commands::versions::install::handle(args.version_id, args.directory).await;
                 }
             },
         }
