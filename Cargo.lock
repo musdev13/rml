@@ -668,6 +668,7 @@ name = "musutils"
 version = "0.1.0"
 dependencies = [
  "home",
+ "reqwest",
  "serde",
  "serde_json",
 ]

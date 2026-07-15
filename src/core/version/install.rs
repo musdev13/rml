@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use crate::core;
 
 pub async fn install(version_id: String, directory: Option<PathBuf>){
-    let version_url = core::version::get_version_json_url(version_id).await;
-    println!("{}", version_url);
+    let version_json_str = core::version::get_version_json(version_id).await;
+    println!("{}", version_json_str);
 
     // let versions_path: PathBuf = directory.unwrap_or_else(|| {
     //     println!("using default path default path default... path..?");
