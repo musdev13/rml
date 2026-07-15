@@ -888,9 +888,18 @@ version = "0.0.1"
 dependencies = [
  "clap",
  "musutils",
- "reqwest",
+ "rmlib",
  "serde_json",
  "tokio",
+]
+
+[[package]]
+name = "rmlib"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "musutils",
+ "serde_json",
 ]
 
 [[package]]

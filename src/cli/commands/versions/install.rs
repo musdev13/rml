@@ -1,8 +1,6 @@
 use clap::Args;
 use std::path::PathBuf;
 
-use crate::core;
-
 #[derive(Args, Debug)]
 pub struct InstallArgs {
     pub version_id: String,
@@ -14,5 +12,5 @@ pub struct InstallArgs {
 
 pub async fn handle(version_id: String, directory: Option<PathBuf>, libs: Option<PathBuf>) {
     println!("{}\n{}\n{}\n{}", version_id, "-".repeat(10), directory.clone().map_or("default".to_string(), |p| p.display().to_string()), libs.clone().map_or("default".to_string(), |p| p.display().to_string()));
-    core::version::install(version_id, directory, libs).await;
+    rmlib::core::version::install(version_id, directory, libs).await;
 }

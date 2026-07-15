@@ -1,4 +1,3 @@
-mod core;
 mod tui;
 mod cli;
 

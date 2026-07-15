@@ -1,3 +1,3 @@
 pub fn handle() {
-    crate::core::test::run_test();
+    rmlib::core::test::run_test();
 }
