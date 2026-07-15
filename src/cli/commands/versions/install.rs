@@ -12,5 +12,5 @@ pub struct InstallArgs {
 
 pub async fn handle(version_id: String, directory: Option<PathBuf>) {
     println!("{}, {}", version_id, directory.clone().map_or("default".to_string(), |p| p.display().to_string()));
-    core::version::install(version_id, directory);
+    core::version::install(version_id, directory).await;
 }
