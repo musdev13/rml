@@ -8,9 +8,10 @@ pub struct InstallArgs {
     pub directory: Option<PathBuf>,
     #[arg(short, long, value_name = "LIBS_PATH")]
     pub libs: Option<PathBuf>,
+    #[arg(short, long, value_name = "ASSETS_PATH")]
+    pub assets: Option<PathBuf>,
 }
 
-pub async fn handle(version_id: String, directory: Option<PathBuf>, libs: Option<PathBuf>) {
-    println!("{}\n{}\n{}\n{}", version_id, "-".repeat(10), directory.clone().map_or("default".to_string(), |p| p.display().to_string()), libs.clone().map_or("default".to_string(), |p| p.display().to_string()));
-    rmlib::core::version::install(version_id, directory, libs).await;
+pub async fn handle(version_id: String, directory: Option<PathBuf>, libs: Option<PathBuf>, assets: Option<PathBuf>) {
+    rmlib::core::version::install(version_id, directory, libs, assets).await;
 }
