@@ -38,6 +38,20 @@ pub struct InstallArgs {
 
     #[arg(long, help = "Install assets")]
     pub iassets: bool,
+
+    #[arg(
+        long, 
+        default_value_t = 150, 
+        help = "Max parallel library downloads"
+    )]
+    pub alibs: usize,
+
+    #[arg(
+        long, 
+        default_value_t = 350, 
+        help = "Max parallel asset downloads"
+    )]
+    pub aassets: usize,
 }
 
 pub async fn handle(args: InstallArgs) {
@@ -65,6 +79,8 @@ pub async fn handle(args: InstallArgs) {
         iclient,
         ilibs,
         iassets,
+        args.alibs,
+        args.aassets
     )
     .await;
 }
