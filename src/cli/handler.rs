@@ -40,7 +40,7 @@ pub async fn handle_cli() -> bool {
                     ).await;
                 },
                 VersionsCommands::Install(args) => {
-                    commands::versions::install::handle(args.version_id, args.directory, args.libs, args.assets).await;
+                    commands::versions::install::handle(args).await;
                 }
             },
         }
