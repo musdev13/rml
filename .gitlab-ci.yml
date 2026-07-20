@@ -1,0 +1,57 @@
+spec:
+  inputs:
+    version:
+      description: "Версия релиза (например v0.1.0)"
+      type: string
+
+---
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - when: never
+
+stages:
+  - build
+  - release
+
+variables:
+  GIT_SSH_COMMAND: "ssh -i /home/idk/.ssh/keys/gitlab_ci -o IdentitiesOnly=yes"
+
+build:
+  stage: build
+  tags:
+    - linux
+
+  script:
+    - rm -rf ../musutils
+    - git clone git@gitlab.com:cuteemus/musutils.git ../musutils
+
+    - rm -rf ../rmlib
+    - git clone git@gitlab.com:cuteemus/rmlib.git ../rmlib
+
+    - cargo build --release
+    - cargo build --release --target x86_64-pc-windows-gnu
+
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - target/release/rml
+      - target/x86_64-pc-windows-gnu/release/rml.exe
+
+release:
+  stage: release
+  tags:
+    - linux
+
+  needs:
+    - job: build
+      artifacts: true
+
+  script:
+    - |
+      glab release create "$[[ inputs.version ]]" \
+        target/release/rml#rml-linux \
+        target/x86_64-pc-windows-gnu/release/rml.exe#rml-windows.exe \
+        --title "$[[ inputs.version ]]" \
+        --notes "Release $[[ inputs.version ]]" \
+        --ref "$CI_COMMIT_SHA"
