@@ -4,15 +4,28 @@ workflow:
     - when: never
 
 stages:
-  - test
+  - build
 
-test-runner:
-  stage: test
+variables:
+  GIT_SSH_COMMAND: "ssh -i /home/idk/.ssh/keys/gitlab_ci -o IdentitiesOnly=yes"
+
+build:
+  stage: build
   tags:
     - linux
+
   script:
-    - echo "=== Runner info ==="
-    - whoami
-    - pwd
-    - echo "$HOME"
-    - uname -a
+    - rm -rf ../musutils
+    - git clone git@gitlab.com:cuteemus/musutils.git ../musutils
+
+    - rm -rf ../rmlib
+    - git clone git@gitlab.com:cuteemus/rmlib.git ../rmlib
+
+    - cargo build --release &
+    - cargo build --release --target x86_64-pc-windows-gnu &
+    - wait
+
+  artifacts:
+    paths:
+      - target/release/rml
+      - target/x86_64-pc-windows-gnu/release/rml.exe
