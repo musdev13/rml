@@ -1,0 +1,13 @@
+stages:
+  - test
+
+test-runner:
+  stage: test
+  tags:
+    - linux
+  script:
+    - echo "=== Runner info ==="
+    - whoami
+    - pwd
+    - echo "$HOME"
+    - uname -a
