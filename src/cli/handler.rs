@@ -43,6 +43,9 @@ pub async fn handle_cli() -> bool {
                     commands::versions::install::handle(args).await;
                 }
             },
+            Commands::Run(args) => {
+                commands::run::handler(args).await;
+            }
         }
         true
     } else {
