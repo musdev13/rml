@@ -47,6 +47,13 @@ pub struct RunArgs {
     pub ely: bool,
 
     #[arg(
+        short = 'b',
+        long,
+        help = "Apply betacraft fix for pre-1.6 versions"
+    )]
+    pub betafix: bool,
+
+    #[arg(
         long,
         value_name = "VERSIONS_PATH",
         help = "Path to the versions directory where JSON and client JAR are stored"
@@ -121,6 +128,7 @@ pub async fn handler(args: RunArgs) {
         &args.uuid,
         &args.token,
         args.ely,
+        args.betafix,
         &v_str,
         &a_str,
         &l_str,
