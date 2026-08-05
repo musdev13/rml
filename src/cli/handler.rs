@@ -1,4 +1,4 @@
-use crate::cli::{commands,commands::{Commands,versions::VersionsCommands}};
+use crate::cli::commands::{self, Commands, versions::VersionsCommands, login::LoginCommands};
 use crate::cli::Cli;
 use clap::Parser;
 
@@ -45,6 +45,11 @@ pub async fn handle_cli() -> bool {
             },
             Commands::Run(args) => {
                 commands::run::handler(args).await;
+            },
+            Commands::Login { subcommand } => match subcommand {
+                LoginCommands::Ely(args) => {
+                    commands::login::ely::handler(args).await;
+                }
             }
         }
         true
