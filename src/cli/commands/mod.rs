@@ -3,11 +3,13 @@ pub mod init;
 pub mod versions;
 pub mod run;
 pub mod login;
+pub mod modloaders;
 
 use clap::Subcommand;
 use versions::VersionsCommands;
 use run::RunArgs;
 use login::LoginCommands;
+use modloaders::ModloadersCommands;
 
 #[derive(Subcommand)]
 pub enum Commands {
@@ -24,5 +26,9 @@ pub enum Commands {
     Login {
         #[command(subcommand)]
         subcommand: LoginCommands,
+    },
+    Modloaders {
+        #[command(subcommand)]
+        subcommand: ModloadersCommands,
     }
 }
