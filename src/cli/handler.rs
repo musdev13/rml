@@ -1,9 +1,21 @@
+use crate::cli::commands::modloaders::ModloadersCommands;
+use crate::cli::commands::modloaders::fabric::FabricCommands;
 use crate::cli::commands::{self, Commands, versions::VersionsCommands, login::LoginCommands};
 use crate::cli::Cli;
 use clap::Parser;
 
 pub async fn handle_cli() -> bool {
     let args = Cli::parse();
+
+    if args.version {
+        println!(
+            "{} {}\nrmlib {}",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION"),
+            rmlib::VERSION,
+        );
+        return true;
+    }
 
     if let Some(command) = args.command {
         match command {
@@ -49,6 +61,16 @@ pub async fn handle_cli() -> bool {
             Commands::Login { subcommand } => match subcommand {
                 LoginCommands::Ely(args) => {
                     commands::login::ely::handler(args).await;
+                }
+            },
+            Commands::Modloaders { subcommand } => match subcommand {
+                ModloadersCommands::Fabric { subcommand } => match subcommand {
+                    FabricCommands::FetchList(args) => {
+                        commands::modloaders::fabric::fetch_list::handler(args).await;
+                    },
+                    FabricCommands::Install(args) => {
+                        commands::modloaders::fabric::install::handler(args).await;
+                    }
                 }
             }
         }

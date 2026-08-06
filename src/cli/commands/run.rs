@@ -81,6 +81,13 @@ pub struct RunArgs {
         help = "Path to the game directory (working directory for launch)"
     )]
     pub game_path: Option<PathBuf>,
+
+    #[arg(
+        long,
+        value_name = "FABRIC_VERSION",
+        help = "Specify Fabric Loader version to run"
+    )]
+    pub fabric: Option<String>,
 }
 
 pub async fn handler(args: RunArgs) {
@@ -123,6 +130,7 @@ pub async fn handler(args: RunArgs) {
 
     run_client(
         &args.version_id,
+        args.fabric.as_deref(),
         &args.ram,
         &args.username,
         &args.uuid,
