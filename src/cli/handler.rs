@@ -57,6 +57,9 @@ pub async fn handle_cli() -> bool {
                 ModloadersCommands::Fabric { subcommand } => match subcommand {
                     FabricCommands::FetchList(args) => {
                         commands::modloaders::fabric::fetch_list::handler(args).await;
+                    },
+                    FabricCommands::Install(args) => {
+                        commands::modloaders::fabric::install::handler(args).await;
                     }
                 }
             }
