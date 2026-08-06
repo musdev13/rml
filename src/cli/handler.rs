@@ -7,6 +7,16 @@ use clap::Parser;
 pub async fn handle_cli() -> bool {
     let args = Cli::parse();
 
+    if args.version {
+        println!(
+            "{} {}\nrmlib {}",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION"),
+            rmlib::VERSION,
+        );
+        return true;
+    }
+
     if let Some(command) = args.command {
         match command {
             Commands::Test => {
