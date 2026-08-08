@@ -1,5 +1,6 @@
 use crate::cli::commands::modloaders::ModloadersCommands;
 use crate::cli::commands::modloaders::fabric::FabricCommands;
+use crate::cli::commands::modloaders::neoforge::NeoforgeCommands;
 use crate::cli::commands::{self, Commands, versions::VersionsCommands, login::LoginCommands};
 use crate::cli::Cli;
 use clap::Parser;
@@ -9,10 +10,13 @@ pub async fn handle_cli() -> bool {
 
     if args.version {
         println!(
-            "{} {}\nrmlib {}",
+            "{} {}\n{} {}\n{} {}",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION"),
+            rmlib::NAME,
             rmlib::VERSION,
+            musutils::NAME,
+            musutils::VERSION
         );
         return true;
     }
@@ -70,6 +74,14 @@ pub async fn handle_cli() -> bool {
                     },
                     FabricCommands::Install(args) => {
                         commands::modloaders::fabric::install::handler(args).await;
+                    }
+                },
+                ModloadersCommands::Neoforge { subcommand } => match subcommand {
+                    NeoforgeCommands::FetchList(args) => {
+                        commands::modloaders::neoforge::fetch_list::handler(args).await;
+                    },
+                    NeoforgeCommands::Install(args) => {
+                        commands::modloaders::neoforge::install::handler(args).await;
                     }
                 }
             }

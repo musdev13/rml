@@ -85,9 +85,18 @@ pub struct RunArgs {
     #[arg(
         long,
         value_name = "FABRIC_VERSION",
+        conflicts_with = "neoforge",
         help = "Specify Fabric Loader version to run"
     )]
     pub fabric: Option<String>,
+
+    #[arg(
+        long,
+        value_name = "NEOFORGE_VERSION",
+        conflicts_with = "fabric",
+        help = "Specify NeoForge version to run"
+    )]
+    pub neoforge: Option<String>,
 }
 
 pub async fn handler(args: RunArgs) {
@@ -131,6 +140,7 @@ pub async fn handler(args: RunArgs) {
     run_client(
         &args.version_id,
         args.fabric.as_deref(),
+        args.neoforge.as_deref(),
         &args.ram,
         &args.username,
         &args.uuid,
