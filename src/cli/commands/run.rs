@@ -1,7 +1,9 @@
 use std::path::PathBuf;
+
 use clap::Args;
 use musutils;
 use rmlib::core::config;
+use rmlib::core::run::build_command;
 use rmlib::core::run::run_client;
 
 #[derive(Args, Debug)]
@@ -54,6 +56,12 @@ pub struct RunArgs {
     pub betafix: bool,
 
     #[arg(
+        long = "just-command",
+        help = "Print the launch command instead of starting the game"
+    )]
+    pub just_command: bool,
+
+    #[arg(
         long,
         value_name = "VERSIONS_PATH",
         help = "Path to the versions directory where JSON and client JAR are stored"
@@ -83,6 +91,14 @@ pub struct RunArgs {
     pub game_path: Option<PathBuf>,
 
     #[arg(
+        short,
+        long,
+        value_name = "SPAWN_PATH",
+        help = "Path to the directory from which the game is launched"
+    )]
+    pub spawn_path: Option<PathBuf>,
+
+    #[arg(
         long,
         value_name = "FABRIC_VERSION",
         conflicts_with = "neoforge",
@@ -104,6 +120,7 @@ pub async fn handler(args: RunArgs) {
     let mut is_custom_assets = false;
     let mut is_custom_libs = false;
     let mut is_custom_game = false;
+    let mut is_custom_spawn = false;
 
     let versions_path = musutils::types::deoption(
         args.versions,
@@ -129,6 +146,12 @@ pub async fn handler(args: RunArgs) {
         &mut is_custom_game,
     );
 
+    let spawn_path = musutils::types::deoption(
+        args.spawn_path,
+        || game_path.clone(),
+        &mut is_custom_spawn,
+    );
+
     let natives_path = libs_path.join("natives");
 
     let v_str = versions_path.to_string_lossy();
@@ -136,6 +159,37 @@ pub async fn handler(args: RunArgs) {
     let l_str = libs_path.to_string_lossy();
     let n_str = natives_path.to_string_lossy();
     let g_str = game_path.to_string_lossy();
+    let s_str = spawn_path.to_string_lossy();
+
+    if args.just_command {
+        match build_command(
+            &args.version_id,
+            args.fabric.as_deref(),
+            args.neoforge.as_deref(),
+            &args.ram,
+            &args.username,
+            &args.uuid,
+            &args.token,
+            args.ely,
+            args.betafix,
+            &v_str,
+            &a_str,
+            &l_str,
+            &n_str,
+            &g_str,
+        ) {
+            Ok(command) => println!("{command}"),
+            Err(e) => {
+                eprintln!(
+                    "{}: {}",
+                    musutils::types::Status::Err.as_colored_str(),
+                    e
+                );
+            }
+        }
+
+        return;
+    }
 
     run_client(
         &args.version_id,
@@ -152,5 +206,7 @@ pub async fn handler(args: RunArgs) {
         &l_str,
         &n_str,
         &g_str,
-    ).await;
+        &s_str,
+    )
+    .await;
 }
