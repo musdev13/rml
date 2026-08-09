@@ -63,6 +63,22 @@ pub struct RunArgs {
 
     #[arg(
         long,
+        value_name = "JVM_ARGS",
+        allow_hyphen_values = true,
+        help = "Additional JVM arguments"
+    )]
+    pub jvm_args: Option<String>,
+
+    #[arg(
+        long,
+        value_name = "GAME_ARGS",
+        allow_hyphen_values = true,
+        help = "Additional game arguments"
+    )]
+    pub game_args: Option<String>,
+
+    #[arg(
+        long,
         value_name = "VERSIONS_PATH",
         help = "Path to the versions directory where JSON and client JAR are stored"
     )]
@@ -154,6 +170,22 @@ pub async fn handler(args: RunArgs) {
 
     let natives_path = libs_path.join("natives");
 
+    let custom_jvm_args: Vec<String> = args
+        .jvm_args
+        .as_deref()
+        .unwrap_or("")
+        .split_whitespace()
+        .map(str::to_string)
+        .collect();
+
+    let custom_game_args: Vec<String> = args
+        .game_args
+        .as_deref()
+        .unwrap_or("")
+        .split_whitespace()
+        .map(str::to_string)
+        .collect();
+
     let v_str = versions_path.to_string_lossy();
     let a_str = assets_path.to_string_lossy();
     let l_str = libs_path.to_string_lossy();
@@ -177,6 +209,8 @@ pub async fn handler(args: RunArgs) {
             &l_str,
             &n_str,
             &g_str,
+            &custom_jvm_args,
+            &custom_game_args,
         ) {
             Ok(command) => println!("{command}"),
             Err(e) => {
@@ -207,6 +241,8 @@ pub async fn handler(args: RunArgs) {
         &n_str,
         &g_str,
         &s_str,
+        &custom_jvm_args,
+        &custom_game_args,
     )
     .await;
 }
