@@ -1,4 +1,5 @@
 /target
 /game
+/.venv
 
 *.log
