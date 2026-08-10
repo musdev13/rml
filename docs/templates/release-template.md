@@ -6,8 +6,7 @@
 
 **\*- sasf**
 
-<img src="https://ccvaults.com/thumbnails/20.%20Blocks/18.%20Decoration/Grass_Block.png" height="48">
-<img src="https://ccvaults.com/thumbnails/20.%20Blocks/18.%20Decoration/Grass_Block.png" height="48">
+<img src="https://minecraft.wiki/images/Bedrock_Edition_App_Store_icon_2.png?ec415" height="48">
 
 </div>
 
