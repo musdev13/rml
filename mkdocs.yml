@@ -29,3 +29,6 @@ nav:
   - Getting Started:
       - Installation: pages/getting-started/installation.md
       - Init: pages/getting-started/init.md
+  - Commands:
+      - test: pages/commands/test.md
+      - versions: pages/commands/versions.md
