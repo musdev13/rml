@@ -116,8 +116,14 @@ echo
 # COMPILING
 # ============================================================
 
+echo "Building Linux binary..."
 cargo build --release
+
+echo
+echo "Building Windows binary..."
 cargo build --release --target x86_64-pc-windows-gnu
+
+echo
 
 # ============================================================
 # CHECK FILES
@@ -170,55 +176,77 @@ trap cleanup EXIT
 render_template() {
     local template="$1"
     local output="$2"
-    local mode="$3"
 
-    python3 - "$template" "$output" "$mode" \
+    python3 - "$template" "$output" \
         "${changes[@]}" \
         -- \
         "${images[@]}" <<'PY'
-import sys
 import re
+import sys
 
 template_path = sys.argv[1]
 output_path = sys.argv[2]
-mode = sys.argv[3]
 
-args = sys.argv[4:]
+args = sys.argv[3:]
 
-changes = []
-images = []
+# ------------------------------------------------------------
+# Split changes and images
+# ------------------------------------------------------------
 
 separator = args.index("--")
 
 changes = args[:separator]
 image_args = args[separator + 1:]
 
-for i in range(0, len(image_args), 1):
-    value = image_args[i]
+images = []
 
+for value in image_args:
     if "|" not in value:
         continue
 
     url, height = value.split("|", 1)
     images.append((url, height))
 
+# ------------------------------------------------------------
+# Read template
+# ------------------------------------------------------------
 
-with open(template_path, "r", encoding="utf-8") as f:
-    template = f.read()
+with open(template_path, "r", encoding="utf-8") as file:
+    template = file.read()
 
+# ------------------------------------------------------------
+# m_el
+#
+# {% m_el "..." %}
+#
+# Repeats the contents for every --change.
+# {% m_text %} is replaced with the change text.
+# ------------------------------------------------------------
 
 def replace_changes(match):
     item_template = match.group(1)
 
-    result = []
+    return "\n".join(
+        item_template.replace("{% m_text %}", change)
+        for change in changes
+    )
 
-    for change in changes:
-        result.append(
-            item_template.replace("{% m_text %}", change)
-        )
+template = re.sub(
+    r'\{% m_el "(.*?)" %\}',
+    replace_changes,
+    template,
+    flags=re.DOTALL,
+)
 
-    return "\n".join(result)
-
+# ------------------------------------------------------------
+# i_el
+#
+# {% i_el "..." %}
+#
+# Repeats the contents for every --image.
+# {% i_url %} is replaced with URL.
+# {% i_height %} is replaced with height.
+# ------------------------------------------------------------
 
 def replace_images(match):
     item_template = match.group(1)
@@ -233,37 +261,19 @@ def replace_images(match):
 
     return "\n".join(result)
 
-
-# m_el:
-#
-# {% m_el "..." %}
-#
-# The contents inside the quotes become the item template.
-#
-# The parser intentionally allows escaped quotes.
-#
-template = re.sub(
-    r'\{% m_el "(.*?)" %\}',
-    replace_changes,
-    template,
-    flags=re.DOTALL
-)
-
-
-# i_el:
-#
-# {% i_el "..." %}
-#
 template = re.sub(
     r'\{% i_el "(.*?)" %\}',
     replace_images,
     template,
-    flags=re.DOTALL
+    flags=re.DOTALL,
 )
 
+# ------------------------------------------------------------
+# Write result
+# ------------------------------------------------------------
 
-with open(output_path, "w", encoding="utf-8") as f:
-    f.write(template)
+with open(output_path, "w", encoding="utf-8") as file:
+    file.write(template)
 PY
 }
 
@@ -275,8 +285,7 @@ echo "Generating GitHub release notes..."
 
 render_template \
     "$GITHUB_TEMPLATE" \
-    "$github_notes" \
-    "github"
+    "$github_notes"
 
 # ============================================================
 # SHOW GITHUB NOTES
@@ -297,7 +306,7 @@ echo "Creating GitHub release..."
 
 gh release create "$tag" \
     "$WINDOWS_BINARY" \
-    "$LINUX_BINARY" \ 
+    "$LINUX_BINARY" \
     --repo "$GITHUB_REPO" \
     --title "$title" \
     --notes-file "$github_notes"
@@ -348,8 +357,7 @@ echo "Generating GitLab release notes..."
 
 render_template \
     "$GITLAB_TEMPLATE" \
-    "$gitlab_notes" \
-    "gitlab"
+    "$gitlab_notes"
 
 # ============================================================
 # GENERATE GITLAB ASSET LINKS
