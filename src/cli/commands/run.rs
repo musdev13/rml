@@ -211,6 +211,7 @@ pub async fn handler(args: RunArgs) {
             &g_str,
             &custom_jvm_args,
             &custom_game_args,
+            args.just_command
         ) {
             Ok(command) => println!("{command}"),
             Err(e) => {
