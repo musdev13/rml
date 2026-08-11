@@ -1,0 +1,42 @@
+site_name: RML
+site_description: Rust Minecraft Launcher Docs
+
+plugins:
+  - search
+  - include-markdown
+
+theme:
+  name: material
+  logo: assets/icon_col.svg
+  favicon: assets/icon_col.svg
+
+  features:
+    - navigation.footer
+    - navigation.top
+    - navigation.sections
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+  palette:
+    - scheme: slate
+      primary: black
+      accent: blue
+
+extra_css:
+  - assets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: pages/getting-started/installation.md
+      - Init: pages/getting-started/init.md
+  - Commands:
+      - test: pages/commands/test.md
+      - versions: pages/commands/versions.md
+      - modloaders:
+          - fabric: pages/commands/modloaders/fabric.md
+          - neoforge: pages/commands/modloaders/neoforge.md
+      - login:
+          - ely: pages/commands/login/ely.md
+      - run: pages/commands/run.md
