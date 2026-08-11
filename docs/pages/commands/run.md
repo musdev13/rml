@@ -92,7 +92,7 @@ rml run 26.2 --neoforge 21.8.31
 Apply the Betacraft fix for a pre-1.6 version:
 
 ```sh
-rml run 1.5.2 --betafix
+rml run b1.7.3 --betafix
 ```
 
 Use custom JVM arguments:
