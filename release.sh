@@ -296,8 +296,8 @@ echo
 echo "Creating GitHub release..."
 
 gh release create "$tag" \
-    "$LINUX_BINARY" \
     "$WINDOWS_BINARY" \
+    "$LINUX_BINARY" \ 
     --repo "$GITHUB_REPO" \
     --title "$title" \
     --notes-file "$github_notes"
@@ -358,13 +358,13 @@ render_template \
 cat > "$gitlab_assets" <<EOF
 [
   {
-    "name": "${linux_name}",
-    "url": "${linux_url}",
+    "name": "${windows_name}",
+    "url": "${windows_url}",
     "link_type": "other"
   },
   {
-    "name": "${windows_name}",
-    "url": "${windows_url}",
+    "name": "${linux_name}",
+    "url": "${linux_url}",
     "link_type": "other"
   }
 ]
