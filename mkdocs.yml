@@ -34,3 +34,6 @@ nav:
   - Commands:
       - test: pages/commands/test.md
       - versions: pages/commands/versions.md
+      - modloaders:
+          - fabric: pages/commands/modloaders/fabric.md
+          - neoforge: pages/commands/modloaders/neoforge.md
