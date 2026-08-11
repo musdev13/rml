@@ -2,9 +2,9 @@
 
 <div align="center" markdown="1">
 
+<img src="./assets/icon_col_bg.svg" width="125" style="border-radius:32px"><br>
 {% include-markdown "components/logo_title.md" %}<br>
-{% include-markdown "components/mc_logo.md" %} <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png" width="52"><br>
-<br>{% include-markdown "components/links.md" %}
+{% include-markdown "components/mc_logo.md" %} <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png" width="52">
 <hr>
 
 <p><strong>rml</strong> is a universal Minecraft launcher written in <a href="https://rust-lang.org/"><strong>Rust</strong></a>.
@@ -13,6 +13,7 @@ Development is ongoing, with a focus on expanding its functionality, providing m
 <br>
 
 <a href="pages/getting-started/installation/"><strong style="font-size:24px">get started -></strong></a><br>:3
+<br><br>{% include-markdown "components/links.md" %}
 
 </div>
 
