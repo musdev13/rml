@@ -1,4 +1,5 @@
 use clap::Args;
+use crossterm::event::{self, Event};
 use std::io::{self, Write};
 use std::path::PathBuf;
 
@@ -73,6 +74,20 @@ pub async fn handler(args: ElyArgs) {
 
             println!("{pretty_json}");
         } else {
+            if args.ask {
+                println!();
+                println!("Press any key to show authentication data...");
+                io::stdout().flush().unwrap();
+
+                loop {
+                    if let Ok(Event::Key(_)) = event::read() {
+                        break;
+                    }
+                }
+
+                println!();
+            }
+
             let line = musutils::types::line::draw_colored(
                 '=',
                 35,
