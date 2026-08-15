@@ -1561,7 +1561,7 @@ dependencies = [
 
 [[package]]
 name = "rml"
-version = "0.8.2"
+version = "0.9.0"
 dependencies = [
  "clap",
  "crossterm",
@@ -1574,7 +1574,7 @@ dependencies = [
 
 [[package]]
 name = "rmlib"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "clap",
  "musutils",
