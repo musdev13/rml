@@ -42,6 +42,13 @@ pub struct RunArgs {
     pub token: String,
 
     #[arg(
+        long,
+        default_value = "noxuid",
+        help = "Xbox User ID"
+    )]
+    pub xuid: String,
+
+    #[arg(
         short = 'e',
         long,
         help = "Enable Ely.by skin system / authentication"
@@ -201,6 +208,7 @@ pub async fn handler(args: RunArgs) {
             &args.ram,
             &args.username,
             &args.uuid,
+            &args.xuid,
             &args.token,
             args.ely,
             args.betafix,
@@ -233,6 +241,7 @@ pub async fn handler(args: RunArgs) {
         &args.ram,
         &args.username,
         &args.uuid,
+        &args.xuid,
         &args.token,
         args.ely,
         args.betafix,
