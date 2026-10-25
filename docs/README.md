@@ -1,6 +1,7 @@
 <div align="center" markdown="1">
 
 <img src="./assets/icon_col_bg.svg" width="125" style="border-radius:32px"><br>
+
 <img src="./assets/minecraft_title.png" width="500"><br>
 
 <br>
@@ -31,7 +32,7 @@ Development is ongoing, with a focus on expanding its functionality, providing m
     src="https://img.shields.io/badge/rmlib_repo-rmlib?style=for-the-badge&logo=github&logoColor=white&label=github&labelColor=black&color=white"
   >
 </a>
-
+<br>
 <a href="https://github.com/musdev13/musutils">
   <img
     alt="musutils GitHub"
