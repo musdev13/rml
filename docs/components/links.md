@@ -4,9 +4,6 @@
     src="https://img.shields.io/github/v/release/musdev13/rml?include_prereleases&style=for-the-badge&logo=github&labelColor=black&color=white"
   >
 </a>
-
-<br>
-
 <a href="https://github.com/musdev13/rmlib">
   <img
     alt="rmlib GitHub"

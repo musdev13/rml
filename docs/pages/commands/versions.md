@@ -54,7 +54,7 @@ Fetch old alpha versions as JSON with all available fields:
 
 ## install
 ```sh
-rml versions install rml versions install [OPTIONS] [VERSION_ID]
+rml versions install [OPTIONS] [VERSION_ID]
 ```
 install vanilla version
 ### Arguments

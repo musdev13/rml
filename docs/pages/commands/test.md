@@ -1,6 +1,15 @@
 ```sh
 rml test
 ```
-just test command. should output `Meow`.
+just test command.
 
-there's nothing to do. **:3**
+prints an ASCII cat to stdout:
+
+```
+  /\_/\
+ ( o.o )
+  > ^ <
+  meow~
+```
+
+there's nothing else to do. **:3**
