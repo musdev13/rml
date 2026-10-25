@@ -34,32 +34,16 @@ pub struct RunArgs {
     )]
     pub uuid: String,
 
-    #[arg(
-        long,
-        default_value = "null",
-        help = "Authentication access token"
-    )]
+    #[arg(long, default_value = "null", help = "Authentication access token")]
     pub token: String,
 
-    #[arg(
-        long,
-        default_value = "noxuid",
-        help = "Xbox User ID"
-    )]
+    #[arg(long, default_value = "noxuid", help = "Xbox User ID")]
     pub xuid: String,
 
-    #[arg(
-        short = 'e',
-        long,
-        help = "Enable Ely.by skin system / authentication"
-    )]
+    #[arg(short = 'e', long, help = "Enable Ely.by skin system / authentication")]
     pub ely: bool,
 
-    #[arg(
-        short = 'b',
-        long,
-        help = "Apply betacraft fix for pre-1.6 versions"
-    )]
+    #[arg(short = 'b', long, help = "Apply betacraft fix for pre-1.6 versions")]
     pub betafix: bool,
 
     #[arg(
@@ -139,41 +123,19 @@ pub struct RunArgs {
 }
 
 pub async fn handler(args: RunArgs) {
-    let mut is_custom_versions = false;
-    let mut is_custom_assets = false;
-    let mut is_custom_libs = false;
-    let mut is_custom_game = false;
-    let mut is_custom_spawn = false;
-
-    let versions_path = musutils::types::deoption(
-        args.versions,
-        || PathBuf::from(config::get_versions_path()),
-        &mut is_custom_versions,
-    );
-
-    let assets_path = musutils::types::deoption(
-        args.assets,
-        || PathBuf::from(config::get_assets_path()),
-        &mut is_custom_assets,
-    );
-
-    let libs_path = musutils::types::deoption(
-        args.libs,
-        || PathBuf::from(config::get_libs_path()),
-        &mut is_custom_libs,
-    );
-
-    let game_path = musutils::types::deoption(
-        args.game_path,
-        || PathBuf::from("~/.minecraft"),
-        &mut is_custom_game,
-    );
-
-    let spawn_path = musutils::types::deoption(
-        args.spawn_path,
-        || game_path.clone(),
-        &mut is_custom_spawn,
-    );
+    let versions_path = args
+        .versions
+        .unwrap_or_else(|| PathBuf::from(config::get_versions_path()));
+    let assets_path = args
+        .assets
+        .unwrap_or_else(|| PathBuf::from(config::get_assets_path()));
+    let libs_path = args
+        .libs
+        .unwrap_or_else(|| PathBuf::from(config::get_libs_path()));
+    let game_path = args
+        .game_path
+        .unwrap_or_else(|| PathBuf::from("~/.minecraft"));
+    let spawn_path = args.spawn_path.unwrap_or_else(|| game_path.clone());
 
     let natives_path = libs_path.join("natives");
 
@@ -219,15 +181,11 @@ pub async fn handler(args: RunArgs) {
             &g_str,
             &custom_jvm_args,
             &custom_game_args,
-            args.just_command
+            args.just_command,
         ) {
             Ok(command) => println!("{command}"),
             Err(e) => {
-                eprintln!(
-                    "{}: {}",
-                    musutils::types::Status::Err.as_colored_str(),
-                    e
-                );
+                eprintln!("{}: {}", musutils::types::Status::Err.as_colored_str(), e);
             }
         }
 

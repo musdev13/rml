@@ -14,5 +14,5 @@ pub enum ModloadersCommands {
     Neoforge {
         #[command(subcommand)]
         subcommand: NeoforgeCommands,
-    }
+    },
 }

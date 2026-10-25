@@ -20,10 +20,14 @@ pub async fn handler(args: FetchListArgs) {
     let paged_versions = musutils::vec::get_page(&all_versions, args.page, args.count);
 
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&paged_versions).expect("can't serialize")
-        );
+        match serde_json::to_string_pretty(&paged_versions) {
+            Ok(out) => println!("{out}"),
+            Err(e) => eprintln!(
+                "{}: failed to serialize versions: {}",
+                musutils::types::Status::Err.as_colored_str(),
+                e
+            ),
+        }
     } else {
         if paged_versions.is_empty() {
             println!("no versions available on page {}.", args.page);

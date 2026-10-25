@@ -1,16 +1,17 @@
-pub mod test;
 pub mod init;
-pub mod versions;
-pub mod run;
 pub mod login;
 pub mod modloaders;
+pub mod run;
+pub mod test;
+pub mod versions;
 
 use clap::Subcommand;
-use versions::VersionsCommands;
-use run::RunArgs;
 use login::LoginCommands;
 use modloaders::ModloadersCommands;
+use run::RunArgs;
+use versions::VersionsCommands;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Subcommand)]
 pub enum Commands {
     Test,
@@ -30,5 +31,5 @@ pub enum Commands {
     Modloaders {
         #[command(subcommand)]
         subcommand: ModloadersCommands,
-    }
+    },
 }

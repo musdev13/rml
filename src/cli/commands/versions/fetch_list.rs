@@ -34,10 +34,11 @@ pub struct FetchListArgs {
     pub show_url: bool,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn handle(
     version_type: Option<VersionType>,
-    page: u32, 
-    count: u32, 
+    page: u32,
+    count: u32,
     json: bool,
     id: bool,
     release_time: bool,
@@ -51,23 +52,27 @@ pub async fn handle(
         None => all_versions,
     };
     let paged_versions = musutils::vec::get_page(&filtered_versions, page, count);
-    let striped_versions = strip_version(
-        &paged_versions, 
-        id, 
-        release_time, 
-        time, 
-        r#type, 
-        url
-    );
+    let striped_versions = strip_version(&paged_versions, id, release_time, time, r#type, url);
 
     if json {
-        println!("{}", serde_json::to_string_pretty(&striped_versions).expect("can't serialize"));
+        match serde_json::to_string_pretty(&striped_versions) {
+            Ok(out) => println!("{out}"),
+            Err(e) => eprintln!(
+                "{}: failed to serialize versions: {}",
+                musutils::types::Status::Err.as_colored_str(),
+                e
+            ),
+        }
     } else {
         if striped_versions.is_empty() {
             println!("no versions available on page {}.", page);
             return;
         }
-        println!("\n--- versions list (page {}, items: {}) ---", page, striped_versions.len());
+        println!(
+            "\n--- versions list (page {}, items: {}) ---",
+            page,
+            striped_versions.len()
+        );
         musutils::vec::print_json_as_table(&striped_versions);
 
         println!();
