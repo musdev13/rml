@@ -78,7 +78,7 @@ pub async fn handler(args: ElyArgs) {
     };
 
     if args.patch
-        && let Err(e) = rmlib::core::auth::ely::install_patch(args.libs, args.json).await
+        && let Err(e) = rmlib::extra::ely::install_patch(args.libs, args.json).await
     {
         eprintln!(
             "{}: failed to install authlib patch: {}",
@@ -92,7 +92,7 @@ pub async fn handler(args: ElyArgs) {
         return;
     }
 
-    let res = match rmlib::core::auth::ely::login(login, passwd).await {
+    let res = match rmlib::extra::ely::login(login, passwd).await {
         Ok(r) => r,
         Err(e) => {
             eprintln!(

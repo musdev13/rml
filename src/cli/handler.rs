@@ -1,22 +1,37 @@
 use crate::cli::Cli;
+#[cfg(feature = "ely")]
+use crate::cli::commands::login::LoginCommands;
 use crate::cli::commands::modloaders::ModloadersCommands;
 use crate::cli::commands::modloaders::fabric::FabricCommands;
 use crate::cli::commands::modloaders::neoforge::NeoforgeCommands;
-use crate::cli::commands::{self, Commands, login::LoginCommands, versions::VersionsCommands};
+use crate::cli::commands::{self, Commands, versions::VersionsCommands};
 use clap::Parser;
 
 pub async fn handle_cli() -> bool {
     let args = Cli::parse();
 
     if args.version {
+        let rmlib_mods = rmlib::available_modules()
+            .iter()
+            .map(|m| m.name)
+            .collect::<Vec<_>>()
+            .join(", ");
+        let musutils_mods = musutils::available_modules()
+            .iter()
+            .map(|m| format!("{} v{}", m.name, m.generation))
+            .collect::<Vec<_>>()
+            .join(", ");
+
         println!(
-            "{} {}\n{} {}\n{} {}",
+            "{} {}\n{} {} ({})\n{} {} ({})",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION"),
             rmlib::NAME,
             rmlib::VERSION,
+            rmlib_mods,
             musutils::NAME,
-            musutils::VERSION
+            musutils::VERSION,
+            musutils_mods,
         );
         return true;
     }
@@ -69,6 +84,7 @@ pub async fn handle_cli() -> bool {
             Commands::Run(args) => {
                 commands::run::handler(args).await;
             }
+            #[cfg(feature = "ely")]
             Commands::Login { subcommand } => match subcommand {
                 LoginCommands::Ely(args) => {
                     commands::login::ely::handler(args).await;

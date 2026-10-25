@@ -40,6 +40,7 @@ pub struct RunArgs {
     #[arg(long, default_value = "noxuid", help = "Xbox User ID")]
     pub xuid: String,
 
+    #[cfg(feature = "ely")]
     #[arg(short = 'e', long, help = "Enable Ely.by skin system / authentication")]
     pub ely: bool,
 
@@ -137,6 +138,11 @@ pub async fn handler(args: RunArgs) {
         .unwrap_or_else(|| PathBuf::from("~/.minecraft"));
     let spawn_path = args.spawn_path.unwrap_or_else(|| game_path.clone());
 
+    #[cfg(feature = "ely")]
+    let ely_flag = args.ely;
+    #[cfg(not(feature = "ely"))]
+    let ely_flag = false;
+
     let natives_path = libs_path.join("natives");
 
     let custom_jvm_args: Vec<String> = args
@@ -172,7 +178,7 @@ pub async fn handler(args: RunArgs) {
             &args.uuid,
             &args.xuid,
             &args.token,
-            args.ely,
+            ely_flag,
             args.betafix,
             &v_str,
             &a_str,
@@ -201,7 +207,7 @@ pub async fn handler(args: RunArgs) {
         &args.uuid,
         &args.xuid,
         &args.token,
-        args.ely,
+        ely_flag,
         args.betafix,
         &v_str,
         &a_str,

@@ -1,4 +1,5 @@
 pub mod init;
+#[cfg(feature = "ely")]
 pub mod login;
 pub mod modloaders;
 pub mod run;
@@ -6,6 +7,7 @@ pub mod test;
 pub mod versions;
 
 use clap::Subcommand;
+#[cfg(feature = "ely")]
 use login::LoginCommands;
 use modloaders::ModloadersCommands;
 use run::RunArgs;
@@ -24,6 +26,7 @@ pub enum Commands {
         subcommand: VersionsCommands,
     },
     Run(RunArgs),
+    #[cfg(feature = "ely")]
     Login {
         #[command(subcommand)]
         subcommand: LoginCommands,

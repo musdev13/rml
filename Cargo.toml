@@ -6,6 +6,10 @@ license = "MIT"
 repository = "https://github.com/musdev13/rml"
 
 
+[features]
+default = []
+ely = ["rmlib/ely"]
+
 [dependencies]
 musutils = { path = "../musutils", features = ["vec-v2", "types-v2", "color-v2"] }
 rmlib = { path = "../rmlib" }
