@@ -1,5 +1,7 @@
 /target
 /game
 /.venv
+/dist
+/site
 
 *.log

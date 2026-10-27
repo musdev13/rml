@@ -4,6 +4,8 @@ rml modloaders neoforge <COMMAND>
 
 manage NeoForge modloader versions
 
+*Available when `rml` is built with the `neoforge` feature (enabled by default).*
+
 ## fetch-list
 
 ```sh

@@ -12,9 +12,10 @@ At its core, <strong>rml</strong> is a user-facing interface built on top of the
 Development is ongoing, with a focus on expanding its functionality, providing more detailed configuration options, and ultimately turning <strong>rml</strong> into a versatile, universal toolkit for Minecraft.</p>
 <br>
 
+<p><small>Optional features (<code>ely</code>, <code>fabric</code>, <code>neoforge</code>) are enabled by default. Build with <code>--no-default-features</code> for a vanilla-only launcher without <code>login</code> and <code>modloaders</code> commands.</small></p>
+<br>
+
 <a href="pages/getting-started/installation/"><strong style="font-size:24px">get started -></strong></a><br>:3
 <br><br>{% include-markdown "components/links.md" %}
 
 </div>
-
-

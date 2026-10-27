@@ -17,12 +17,16 @@ Thanks for your interest in the project!
   - `init.rs`
   - `test.rs`
   - `run.rs`
-  - `login/` — `ely.rs`, `mod.rs`
+  - `login/` — `ely.rs`, `mod.rs` — gated behind `#[cfg(feature = "ely")]`
   - `versions/` — `fetch_list.rs`, `install.rs`, `mod.rs`
-  - `modloaders/` — `fabric/` (`fetch_list.rs`, `install.rs`, `mod.rs`), `neoforge/` (`fetch_list.rs`, `install.rs`, `mod.rs`), `mod.rs`
+  - `modloaders/` — gated behind `#[cfg(any(feature = "fabric", feature = "neoforge"))]`
+    - `fabric/` (`fetch_list.rs`, `install.rs`, `mod.rs`) — `#[cfg(feature = "fabric")]`
+    - `neoforge/` (`fetch_list.rs`, `install.rs`, `mod.rs`) — `#[cfg(feature = "neoforge")]`
+    - `mod.rs`
   - `mod.rs` — the `Commands` enum (clap `Subcommand`) and re-exports of nested `Commands` enums.
 - `src/tui/mod.rs` — TUI entry point. Currently a stub, launched when no CLI subcommand is given.
 - `docs/` — MkDocs documentation (see `mkdocs.yml`).
+- `Makefile` — convenience targets for checks, builds and dist packaging.
 
 The CLI is a thin layer on top of `rmlib`. `rml` must not re-implement launcher logic (version resolution, downloads, classpath assembly, JVM spawning). If something is missing, add it to `rmlib` first, then wire it here.
 
@@ -36,16 +40,31 @@ The CLI is a thin layer on top of `rmlib`. `rml` must not re-implement launcher 
 
 4. **Arguments live next to the handler.** Each action defines its own `#[derive(Args)]` struct in the same file as its `handle`/`handler` function. The parent `mod.rs` only declares `pub mod <action>;` and references `<action>::Args` from the parent enum.
 
-5. **Use `rmlib` for launcher logic.** Installation, downloads, classpath, JVM arguments, auth — call into `rmlib` (`rmlib::core::...`, `rmlib::extra::ely::...`). Do not duplicate its code in `rml`. If a helper is missing, add it to `rmlib` first.
+5. **Use `rmlib` for launcher logic.** Installation, downloads, classpath, JVM arguments, auth — call into `rmlib` (`rmlib::core::...`, `rmlib::extra::ely::...`, `rmlib::extra::fabric::...`, `rmlib::extra::neoforge::...`). Do not duplicate its code in `rml`. If a helper is missing, add it to `rmlib` first.
 
 6. **Use `musutils` for utilities.** Colored status output (`musutils::types::Status`), line drawing (`musutils::types::line`), pagination (`musutils::vec::get_page`), JSON tables (`musutils::vec::print_json_as_table`). Do not re-implement these.
 
 7. **Optional features mirror `rmlib`.** `rml` has its own `[features]` table. Each optional area is a feature that forwards to the matching `rmlib` feature, and the affected CLI code is gated with `#[cfg(feature = "...")]`:
+
    ```toml
    [features]
+   default = ["ely", "fabric", "neoforge"]
    ely = ["rmlib/ely"]
+   fabric = ["rmlib/fabric"]
+   neoforge = ["rmlib/neoforge"]
    ```
-   The `ely` feature enables the `login ely` subcommand and the `-e, --ely` flag on `run`. Without it, those are not present in the CLI. When adding a new optional area, mirror the pattern: new `extra` module in `rmlib` → new feature in `rmlib` → matching feature in `rml` → `#[cfg]`-gated commands/args.
+
+   What each feature enables:
+
+   | Feature | CLI effect |
+   |---|---|
+   | `ely` | `rml login ely …` subcommand; `-e, --ely` flag on `rml run` |
+   | `fabric` | `rml modloaders fabric …` subcommands; `--fabric` flag on `rml run` |
+   | `neoforge` | `rml modloaders neoforge …` subcommands; `--neoforge` flag on `rml run` |
+
+   Without a feature, the corresponding command / flag is **absent** from `rml --help`, and the underlying `rmlib` module is not compiled into the binary. `rml --no-default-features` is a minimal launcher: vanilla only, no `login`, no `modloaders`.
+
+   When adding a new optional area, mirror the pattern: new `extra` module in `rmlib` → new feature in `rmlib` → matching feature in `rml` → `#[cfg(feature = "...")]`-gated commands and args.
 
 8. **`rml --version` reflects the actual build.** The version output prints:
    ```
@@ -53,7 +72,7 @@ The CLI is a thin layer on top of `rmlib`. `rml` must not re-implement launcher 
    rmlib <ver> (<modules>)
    musutils <ver> (<modules>)
    ```
-   The module lists come from `rmlib::available_modules()` and `musutils::available_modules()`. Do not hardcode them. Do not change the output format — only the actual module lists change with the build.
+   The module lists come from `rmlib::available_modules()` and `musutils::available_modules()`. Do not hardcode them. Do not change the output format — only the actual module lists change with the build. Building with `--no-default-features` should show only `core` in the `rmlib` list.
 
 9. **Do not add new direct dependencies on `musutils` internals or `rmlib` internals.** Use the public API of each library. If something is missing, propose adding it to the library first.
 
@@ -62,15 +81,37 @@ The CLI is a thin layer on top of `rmlib`. `rml` must not re-implement launcher 
 11. **Keep user-facing behavior stable.** Command names, arguments, defaults and output format must not change without a documented reason. If a breaking CLI change is unavoidable, note it in the PR description and (if present) release notes.
 
 12. **Run the checks before pushing:**
+
     ```bash
-    cargo fmt --check
-    cargo check
-    cargo check --no-default-features
-    cargo test
-    cargo clippy --all-targets
+    make check
     ```
 
-13. By submitting a Pull Request, you agree that your code will be distributed under the **MIT** license.
+    `make check` runs:
+
+    - `cargo fmt --check`
+    - `cargo clippy --all-targets -- -D warnings`
+    - `cargo clippy --all-targets --no-default-features -- -D warnings`
+    - `cargo check --all-targets` (default: `ely` + `fabric` + `neoforge`)
+    - `cargo check --all-targets --no-default-features`
+    - `cargo check --all-targets --no-default-features --features ely`
+    - `cargo check --all-targets --no-default-features --features fabric`
+    - `cargo check --all-targets --no-default-features --features neoforge`
+
+    All must be green. The individual targets are also available (`make fmt-check`, `make clippy`, `make clippy-no-default`, `make check-default`, `make check-no-default`, `make check-ely`, `make check-fabric`, `make check-neoforge`, `make check-all`).
+
+13. **Building release artifacts.**
+
+    ```bash
+    make build           # Linux: target/release/rml
+    make build-windows   # Windows: target/x86_64-pc-windows-gnu/release/rml.exe
+    make dist            # both, then copies rml and rml.exe into dist/
+    ```
+
+    The Windows target requires `rustup target add x86_64-pc-windows-gnu` and an `x86_64-w64-mingw32-gcc` linker in `PATH` (e.g. the `mingw-w64-gcc` package on Arch). `make dist` produces `dist/rml` and `dist/rml.exe`.
+
+14. **No tests in `rml`.** The CLI is a thin wrapper over `rmlib`; the launcher logic (and its tests) live in `rmlib`. `rml` only validates compilation: `cargo check` / `clippy` / `fmt`. If you add actual business logic to `rml` (which you generally should not — see rule 5), it must come with tests.
+
+15. By submitting a Pull Request, you agree that your code will be distributed under the **MIT** license.
 
 ---
 
@@ -93,12 +134,16 @@ Questions and suggestions — in Issues.
   - `init.rs`
   - `test.rs`
   - `run.rs`
-  - `login/` — `ely.rs`, `mod.rs`
+  - `login/` — `ely.rs`, `mod.rs` — под `#[cfg(feature = "ely")]`
   - `versions/` — `fetch_list.rs`, `install.rs`, `mod.rs`
-  - `modloaders/` — `fabric/` (`fetch_list.rs`, `install.rs`, `mod.rs`), `neoforge/` (`fetch_list.rs`, `install.rs`, `mod.rs`), `mod.rs`
+  - `modloaders/` — под `#[cfg(any(feature = "fabric", feature = "neoforge"))]`
+    - `fabric/` (`fetch_list.rs`, `install.rs`, `mod.rs`) — `#[cfg(feature = "fabric")]`
+    - `neoforge/` (`fetch_list.rs`, `install.rs`, `mod.rs`) — `#[cfg(feature = "neoforge")]`
+    - `mod.rs`
   - `mod.rs` — enum `Commands` (clap `Subcommand`) и реэкспорт вложенных enum-ов.
 - `src/tui/mod.rs` — вход в TUI. Сейчас заглушка, запускается когда CLI-подкоманда не задана.
 - `docs/` — документация MkDocs (см. `mkdocs.yml`).
+- `Makefile` — цели для проверок, сборки и упаковки.
 
 CLI — тонкий слой над `rmlib`. `rml` не должен заново реализовывать логику лаунчера (разрешение версий, загрузки, сборка classpath, спавн JVM). Если чего-то не хватает — сначала добавьте это в `rmlib`, затем используйте здесь.
 
@@ -112,16 +157,31 @@ CLI — тонкий слой над `rmlib`. `rml` не должен занов
 
 4. **Аргументы — рядом с обработчиком.** Каждое действие определяет собственный `#[derive(Args)]`-struct в том же файле, что и функция `handle`/`handler`. Родительский `mod.rs` только объявляет `pub mod <action>;` и ссылается на `<action>::Args` из родительского enum-а.
 
-5. **Логика лаунчера — через `rmlib`.** Установка, загрузки, classpath, JVM-аргументы, авторизация — вызывайте `rmlib` (`rmlib::core::...`, `rmlib::extra::ely::...`). Не дублируйте его код в `rml`. Если хелпера нет — добавьте сначала в `rmlib`.
+5. **Логика лаунчера — через `rmlib`.** Установка, загрузки, classpath, JVM-аргументы, авторизация — вызывайте `rmlib` (`rmlib::core::...`, `rmlib::extra::ely::...`, `rmlib::extra::fabric::...`, `rmlib::extra::neoforge::...`). Не дублируйте его код в `rml`. Если хелпера нет — добавьте сначала в `rmlib`.
 
 6. **Утилиты — через `musutils`.** Цветной вывод статусов (`musutils::types::Status`), рисование линий (`musutils::types::line`), пагинация (`musutils::vec::get_page`), таблицы JSON (`musutils::vec::print_json_as_table`). Не реализуйте их повторно.
 
 7. **Опциональные фичи повторяют `rmlib`.** У `rml` своя таблица `[features]`. Каждая опциональная область — фича, которая прокидывает фичу `rmlib`, а затронутый CLI-код оборачивается `#[cfg(feature = "...")]`:
+
    ```toml
    [features]
+   default = ["ely", "fabric", "neoforge"]
    ely = ["rmlib/ely"]
+   fabric = ["rmlib/fabric"]
+   neoforge = ["rmlib/neoforge"]
    ```
-   Фича `ely` включает подкоманду `login ely` и флаг `-e, --ely` в `run`. Без неё этих элементов в CLI нет. При добавлении новой области паттерн повторяется: новый модуль в `rmlib/src/extra/` → новая фича в `rmlib` → соответствующая фича в `rml` → `#[cfg]`-гейтинг команд/аргументов.
+
+   Что включает каждая фича:
+
+   | Фича | Эффект в CLI |
+   |---|---|
+   | `ely` | подкоманда `rml login ely …`; флаг `-e, --ely` у `rml run` |
+   | `fabric` | подкоманды `rml modloaders fabric …`; флаг `--fabric` у `rml run` |
+   | `neoforge` | подкоманды `rml modloaders neoforge …`; флаг `--neoforge` у `rml run` |
+
+   Без фичи соответствующая команда/флаг **отсутствует** в `rml --help`, а соответствующий модуль `rmlib` не компилируется в бинарь. `rml --no-default-features` — минимальный лаунчер: только vanilla, без `login` и `modloaders`.
+
+   При добавлении новой области паттерн повторяется: новый модуль в `rmlib/src/extra/` → новая фича в `rmlib` → соответствующая фича в `rml` → `#[cfg(feature = "...")]`-гейтинг команд/аргументов.
 
 8. **`rml --version` отражает реальную сборку.** Формат вывода:
    ```
@@ -129,7 +189,7 @@ CLI — тонкий слой над `rmlib`. `rml` не должен занов
    rmlib <ver> (<modules>)
    musutils <ver> (<modules>)
    ```
-   Списки модулей берутся из `rmlib::available_modules()` и `musutils::available_modules()`. Не хардкодьте их. Формат вывода не меняется — меняются только фактические списки модулей в зависимости от сборки.
+   Списки модулей берутся из `rmlib::available_modules()` и `musutils::available_modules()`. Не хардкодьте их. Формат вывода не меняется — меняются только фактические списки модулей в зависимости от сборки. При сборке с `--no-default-features` в списке `rmlib` должен остаться только `core`.
 
 9. **Не добавляйте прямых зависимостей от внутренностей `musutils`/`rmlib`.** Используйте публичный API каждой библиотеки. Если чего-то не хватает — предложите сначала добавить это в библиотеку.
 
@@ -138,15 +198,37 @@ CLI — тонкий слой над `rmlib`. `rml` не должен занов
 11. **Пользовательское поведение стабильно.** Имена команд, аргументы, дефолты и формат вывода не должны меняться без документированной причины. Если ломающее изменение CLI неизбежно — отразите это в описании PR и (если есть) в release notes.
 
 12. **Перед пушем прогоняйте проверки:**
+
     ```bash
-    cargo fmt --check
-    cargo check
-    cargo check --no-default-features
-    cargo test
-    cargo clippy --all-targets
+    make check
     ```
 
-13. Отправляя Pull Request, вы соглашаетесь, что ваш код будет распространяться под лицензией **MIT**.
+    `make check` прогоняет:
+
+    - `cargo fmt --check`
+    - `cargo clippy --all-targets -- -D warnings`
+    - `cargo clippy --all-targets --no-default-features -- -D warnings`
+    - `cargo check --all-targets` (default: `ely` + `fabric` + `neoforge`)
+    - `cargo check --all-targets --no-default-features`
+    - `cargo check --all-targets --no-default-features --features ely`
+    - `cargo check --all-targets --no-default-features --features fabric`
+    - `cargo check --all-targets --no-default-features --features neoforge`
+
+    Всё должно быть зелёным. Отдельные цели тоже доступны (`make fmt-check`, `make clippy`, `make clippy-no-default`, `make check-default`, `make check-no-default`, `make check-ely`, `make check-fabric`, `make check-neoforge`, `make check-all`).
+
+13. **Сборка релизных артефактов.**
+
+    ```bash
+    make build           # Linux: target/release/rml
+    make build-windows   # Windows: target/x86_64-pc-windows-gnu/release/rml.exe
+    make dist            # обе сборки + копия rml и rml.exe в dist/
+    ```
+
+    Для Windows-таргета нужны `rustup target add x86_64-pc-windows-gnu` и линкер `x86_64-w64-mingw32-gcc` в `PATH` (например, пакет `mingw-w64-gcc` в Arch). `make dist` кладёт в `dist/` файлы `rml` и `rml.exe`.
+
+14. **В `rml` нет тестов.** CLI — тонкая обёртка над `rmlib`; логика лаунчера (и её тесты) живёт в `rmlib`. `rml` проверяет только сборку: `cargo check` / `clippy` / `fmt`. Если вы добавляете в `rml` реальную бизнес-логику (чего вообще-то делать не стоит — см. правило 5), она должна идти с тестами.
+
+15. Отправляя Pull Request, вы соглашаетесь, что ваш код будет распространяться под лицензией **MIT**.
 
 ---
 

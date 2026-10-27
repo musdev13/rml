@@ -4,6 +4,8 @@ rml login ely [OPTIONS]
 
 authenticate with an Ely.by account and optionally install the Ely.by Authlib patch.
 
+*Available when `rml` is built with the `ely` feature (enabled by default).*
+
 ### Options
 
 | Option                  | Description                                                                                       | Default |
