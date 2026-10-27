@@ -18,6 +18,7 @@ run Minecraft client
 | `-u, --username <USERNAME>` | Player nickname. | `MusPlayer` |
 | `--uuid <UUID>` | Player UUID. | `00000000-0000-0000-0000-000000000000` |
 | `--token <TOKEN>` | Authentication access token. | `null` |
+| `--xuid <XUID>` | Xbox User ID. | `noxuid` |
 | `-e, --ely` | Enable Ely.by skin system / authentication. | — |
 | `-b, --betafix` | Apply Betacraft/ely.by fix for pre-1.6 versions. | — |
 | `--just-command` | Print the launch command instead of starting the game. | — |
@@ -147,3 +148,4 @@ My full launch command _(with wayland fix for linux)_:
 ```sh
 rml run --jvm-args "-Dorg.lwjgl.glfw.libname=/usr/lib/libglfw.so" --token "eyJ0e...FGA" --uuid "53f9...8f29e" -u Musek -e -r 6G 1.21.10 --fabric 0.19.3 -g ./minicraftjennymodfurryfemboys
 ```
+> **UPD**: minecraft 26.3 works great without this fix, but I'll leave it here just in case

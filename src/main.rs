@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Mus. Licensed under the MIT License.
 // See LICENSE file for full license text.
 
-mod tui;
 mod cli;
+mod tui;
 
 #[tokio::main]
 async fn main() {

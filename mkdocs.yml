@@ -1,6 +1,12 @@
 site_name: RML
 site_description: Rust Minecraft Launcher Docs
 
+exclude_docs: |
+  README.md
+
+not_in_nav: |
+  components/*.md
+
 plugins:
   - search
   - include-markdown

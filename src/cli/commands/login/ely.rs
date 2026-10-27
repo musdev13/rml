@@ -3,13 +3,11 @@ use crossterm::event::{self, Event};
 use std::io::{self, Write};
 use std::path::PathBuf;
 
+use musutils::types::Status;
+
 #[derive(Args, Debug)]
 pub struct ElyArgs {
-    #[arg(
-        short = 'a',
-        long = "ask",
-        conflicts_with_all = ["login", "passwd"]
-    )]
+    #[arg(short = 'a', long = "ask", conflicts_with_all = ["login", "passwd"])]
     pub ask: bool,
 
     #[arg(
@@ -29,100 +27,143 @@ pub struct ElyArgs {
     #[arg(long = "patch")]
     pub patch: bool,
 
-    #[arg(
-        long,
-        value_name = "LIBS_PATH",
-        requires = "patch",
-    )]
+    #[arg(long, value_name = "LIBS_PATH", requires = "patch")]
     pub libs: Option<PathBuf>,
 
     #[arg(short = 'j', long = "json", conflicts_with_all = ["ask"])]
     pub json: bool,
 }
 
+fn prompt_login() -> io::Result<String> {
+    print!("login: ");
+    io::stdout().flush()?;
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(input.trim().to_string())
+}
+
+fn prompt_passwd() -> io::Result<String> {
+    rpassword::prompt_password("passwd: ")
+}
+
 pub async fn handler(args: ElyArgs) {
     let (login, passwd) = if args.ask {
-        print!("login: ");
-        io::stdout().flush().unwrap();
-
-        let mut input_login = String::new();
-        io::stdin().read_line(&mut input_login).unwrap();
-
-        let input_passwd = rpassword::prompt_password("passwd: ").unwrap();
-
-        (input_login.trim().to_string(), input_passwd)
+        let login = match prompt_login() {
+            Ok(l) => l,
+            Err(e) => {
+                eprintln!(
+                    "{}: failed to read login: {}",
+                    Status::Err.as_colored_str(),
+                    e
+                );
+                return;
+            }
+        };
+        let passwd = match prompt_passwd() {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!(
+                    "{}: failed to read password: {}",
+                    Status::Err.as_colored_str(),
+                    e
+                );
+                return;
+            }
+        };
+        (login, passwd)
     } else if let (Some(login), Some(passwd)) = (args.login, args.passwd) {
         (login, passwd)
     } else {
         (String::new(), String::new())
     };
 
-    if args.patch {
-        rmlib::core::auth::ely::install_patch(args.libs, args.json)
-            .await
-            .expect("failed to install authlib patch");
+    if args.patch
+        && let Err(e) = rmlib::extra::ely::install_patch(args.libs, args.json).await
+    {
+        eprintln!(
+            "{}: failed to install authlib patch: {}",
+            Status::Err.as_colored_str(),
+            e
+        );
+        return;
     }
 
-    if !login.is_empty() {
-        let res = rmlib::core::auth::ely::login(login, passwd)
-            .await
-            .expect("can't fetch profile data");
+    if login.is_empty() {
+        return;
+    }
 
-        if args.json {
-            let pretty_json = serde_json::to_string_pretty(&res)
-                .expect("failed to serialize to json");
-
-            println!("{pretty_json}");
-        } else {
-            if args.ask {
-                println!();
-                println!("Press any key to show authentication data...");
-                io::stdout().flush().unwrap();
-
-                loop {
-                    if let Ok(Event::Key(_)) = event::read() {
-                        break;
-                    }
-                }
-
-                println!();
-            }
-
-            let line = musutils::types::line::draw_colored(
-                '=',
-                35,
-                musutils::color::Colors::Yellow,
+    let res = match rmlib::extra::ely::login(login, passwd).await {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!(
+                "{}: Ely.by authentication failed: {}",
+                Status::Err.as_colored_str(),
+                e
             );
-
-            println!("{line}");
-            println!(
-                "{} Ely.by authentication successful",
-                musutils::types::Status::Ok.as_colored_str()
-            );
-            println!("{line}");
-
-            println!(
-                "{} Access token: {}",
-                musutils::types::Status::Note.as_colored_str(),
-                res.access_token
-            );
-            println!(
-                "{} Client token: {}",
-                musutils::types::Status::Note.as_colored_str(),
-                res.client_token
-            );
-            println!(
-                "{} Profile ID: {}",
-                musutils::types::Status::Note.as_colored_str(),
-                res.profile_id
-            );
-            println!(
-                "{} Profile name: {}",
-                musutils::types::Status::Note.as_colored_str(),
-                res.profile_name
-            );
-
-            println!("{line}");
+            return;
         }
+    };
+
+    if args.json {
+        match serde_json::to_string_pretty(&res) {
+            Ok(pretty) => println!("{pretty}"),
+            Err(e) => eprintln!(
+                "{}: failed to serialize auth result: {}",
+                Status::Err.as_colored_str(),
+                e
+            ),
+        }
+        return;
     }
+
+    if args.ask {
+        println!();
+        println!("Press any key to show authentication data...");
+        if let Err(e) = io::stdout().flush() {
+            eprintln!(
+                "{}: failed to flush stdout: {}",
+                Status::Err.as_colored_str(),
+                e
+            );
+            return;
+        }
+        loop {
+            if let Ok(Event::Key(_)) = event::read() {
+                break;
+            }
+        }
+        println!();
+    }
+
+    let line = musutils::types::line::draw_colored('=', 35, musutils::color::Colors::Yellow);
+
+    println!("{line}");
+    println!(
+        "{} Ely.by authentication successful",
+        Status::Ok.as_colored_str()
+    );
+    println!("{line}");
+
+    println!(
+        "{} Access token: {}",
+        Status::Note.as_colored_str(),
+        res.access_token
+    );
+    println!(
+        "{} Client token: {}",
+        Status::Note.as_colored_str(),
+        res.client_token
+    );
+    println!(
+        "{} Profile ID: {}",
+        Status::Note.as_colored_str(),
+        res.profile_id
+    );
+    println!(
+        "{} Profile name: {}",
+        Status::Note.as_colored_str(),
+        res.profile_name
+    );
+
+    println!("{line}");
 }

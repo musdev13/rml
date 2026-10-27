@@ -28,7 +28,7 @@ You may **not**:
 ---
 
 For the full trademark policy for the **rmlib** library, see:
-→ [rmlib/TRADEMARK.md](https://gitlab.com/cuteemus/rmlib/-/blob/main/TRADEMARK.md)
+→ [rmlib/TRADEMARK.md](https://github.com/musdev13/rmlib/blob/main/TRADEMARK.md)
 
 ---
 
@@ -62,7 +62,7 @@ For explicit permission, contact: cuteemus@gmail.com
 ---
 
 Полная политика использования товарных знаков для библиотеки **rmlib**:
-→ [rmlib/TRADEMARK.md](https://gitlab.com/cuteemus/rmlib/-/blob/main/TRADEMARK.md)
+→ [rmlib/TRADEMARK.md](https://github.com/musdev13/rmlib/blob/main/TRADEMARK.md)
 
 ---
 

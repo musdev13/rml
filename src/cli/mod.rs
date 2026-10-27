@@ -5,7 +5,6 @@ mod handler;
 
 pub use handler::handle_cli;
 
-
 #[derive(Parser)]
 #[command(author, disable_version_flag = true, about, long_about = None)]
 pub struct Cli {
@@ -15,5 +14,3 @@ pub struct Cli {
     #[arg(short = 'V', long = "version", action = clap::ArgAction::SetTrue)]
     pub version: bool,
 }
-
-

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://gitlab.com/cuteemus/rml/-/raw/main/docs/assets/minecraft_title.png?ref_type=heads" height="150">
+<img src="https://raw.githubusercontent.com/musdev13/rml/main/docs/assets/minecraft_title.png" height="150">
 
 ---
 

@@ -34,32 +34,17 @@ pub struct RunArgs {
     )]
     pub uuid: String,
 
-    #[arg(
-        long,
-        default_value = "null",
-        help = "Authentication access token"
-    )]
+    #[arg(long, default_value = "null", help = "Authentication access token")]
     pub token: String,
 
-    #[arg(
-        long,
-        default_value = "noxuid",
-        help = "Xbox User ID"
-    )]
+    #[arg(long, default_value = "noxuid", help = "Xbox User ID")]
     pub xuid: String,
 
-    #[arg(
-        short = 'e',
-        long,
-        help = "Enable Ely.by skin system / authentication"
-    )]
+    #[cfg(feature = "ely")]
+    #[arg(short = 'e', long, help = "Enable Ely.by skin system / authentication")]
     pub ely: bool,
 
-    #[arg(
-        short = 'b',
-        long,
-        help = "Apply betacraft fix for pre-1.6 versions"
-    )]
+    #[arg(short = 'b', long, help = "Apply betacraft fix for pre-1.6 versions")]
     pub betafix: bool,
 
     #[arg(
@@ -121,59 +106,54 @@ pub struct RunArgs {
     )]
     pub spawn_path: Option<PathBuf>,
 
+    #[cfg(feature = "fabric")]
+    #[cfg_attr(feature = "neoforge", arg(conflicts_with = "neoforge"))]
     #[arg(
         long,
         value_name = "FABRIC_VERSION",
-        conflicts_with = "neoforge",
         help = "Specify Fabric Loader version to run"
     )]
     pub fabric: Option<String>,
 
+    #[cfg(feature = "neoforge")]
+    #[cfg_attr(feature = "fabric", arg(conflicts_with = "fabric"))]
     #[arg(
         long,
         value_name = "NEOFORGE_VERSION",
-        conflicts_with = "fabric",
         help = "Specify NeoForge version to run"
     )]
     pub neoforge: Option<String>,
 }
 
 pub async fn handler(args: RunArgs) {
-    let mut is_custom_versions = false;
-    let mut is_custom_assets = false;
-    let mut is_custom_libs = false;
-    let mut is_custom_game = false;
-    let mut is_custom_spawn = false;
+    let versions_path = args
+        .versions
+        .unwrap_or_else(|| PathBuf::from(config::get_versions_path()));
+    let assets_path = args
+        .assets
+        .unwrap_or_else(|| PathBuf::from(config::get_assets_path()));
+    let libs_path = args
+        .libs
+        .unwrap_or_else(|| PathBuf::from(config::get_libs_path()));
+    let game_path = args
+        .game_path
+        .unwrap_or_else(|| PathBuf::from("~/.minecraft"));
+    let spawn_path = args.spawn_path.unwrap_or_else(|| game_path.clone());
 
-    let versions_path = musutils::types::deoption(
-        args.versions,
-        || PathBuf::from(config::get_versions_path()),
-        &mut is_custom_versions,
-    );
+    #[cfg(feature = "ely")]
+    let ely_flag = args.ely;
+    #[cfg(not(feature = "ely"))]
+    let ely_flag = false;
 
-    let assets_path = musutils::types::deoption(
-        args.assets,
-        || PathBuf::from(config::get_assets_path()),
-        &mut is_custom_assets,
-    );
+    #[cfg(feature = "fabric")]
+    let fabric_version = args.fabric.as_deref();
+    #[cfg(not(feature = "fabric"))]
+    let fabric_version: Option<&str> = None;
 
-    let libs_path = musutils::types::deoption(
-        args.libs,
-        || PathBuf::from(config::get_libs_path()),
-        &mut is_custom_libs,
-    );
-
-    let game_path = musutils::types::deoption(
-        args.game_path,
-        || PathBuf::from("~/.minecraft"),
-        &mut is_custom_game,
-    );
-
-    let spawn_path = musutils::types::deoption(
-        args.spawn_path,
-        || game_path.clone(),
-        &mut is_custom_spawn,
-    );
+    #[cfg(feature = "neoforge")]
+    let neoforge_version = args.neoforge.as_deref();
+    #[cfg(not(feature = "neoforge"))]
+    let neoforge_version: Option<&str> = None;
 
     let natives_path = libs_path.join("natives");
 
@@ -203,14 +183,14 @@ pub async fn handler(args: RunArgs) {
     if args.just_command {
         match build_command(
             &args.version_id,
-            args.fabric.as_deref(),
-            args.neoforge.as_deref(),
+            fabric_version,
+            neoforge_version,
             &args.ram,
             &args.username,
             &args.uuid,
             &args.xuid,
             &args.token,
-            args.ely,
+            ely_flag,
             args.betafix,
             &v_str,
             &a_str,
@@ -219,15 +199,11 @@ pub async fn handler(args: RunArgs) {
             &g_str,
             &custom_jvm_args,
             &custom_game_args,
-            args.just_command
+            args.just_command,
         ) {
             Ok(command) => println!("{command}"),
             Err(e) => {
-                eprintln!(
-                    "{}: {}",
-                    musutils::types::Status::Err.as_colored_str(),
-                    e
-                );
+                eprintln!("{}: {}", musutils::types::Status::Err.as_colored_str(), e);
             }
         }
 
@@ -236,14 +212,14 @@ pub async fn handler(args: RunArgs) {
 
     run_client(
         &args.version_id,
-        args.fabric.as_deref(),
-        args.neoforge.as_deref(),
+        fabric_version,
+        neoforge_version,
         &args.ram,
         &args.username,
         &args.uuid,
         &args.xuid,
         &args.token,
-        args.ely,
+        ely_flag,
         args.betafix,
         &v_str,
         &a_str,

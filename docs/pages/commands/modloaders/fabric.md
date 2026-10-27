@@ -4,6 +4,8 @@ rml modloaders fabric <COMMAND>
 
 manage Fabric modloader versions
 
+*Available when `rml` is built with the `fabric` feature (enabled by default).*
+
 ## fetch-list
 
 ```sh
