@@ -1,0 +1,138 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build (Linux)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout rml
+        uses: actions/checkout@v6
+        with:
+          path: rml
+
+      - name: Checkout rmlib (dev)
+        uses: actions/checkout@v6
+        with:
+          repository: musdev13/rmlib
+          ref: dev
+          path: rmlib
+
+      - name: Checkout musutils (dev)
+        uses: actions/checkout@v6
+        with:
+          repository: musdev13/musutils
+          ref: dev
+          path: musutils
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: stable
+
+      - name: Build (Linux)
+        working-directory: rml
+        run: make build
+
+      - name: Upload rml
+        uses: actions/upload-artifact@v4
+        with:
+          name: rml-linux
+          path: rml/target/release/rml
+          if-no-files-found: error
+
+  build-windows:
+    name: Build (Windows target)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout rml
+        uses: actions/checkout@v6
+        with:
+          path: rml
+
+      - name: Checkout rmlib (dev)
+        uses: actions/checkout@v6
+        with:
+          repository: musdev13/rmlib
+          ref: dev
+          path: rmlib
+
+      - name: Checkout musutils (dev)
+        uses: actions/checkout@v6
+        with:
+          repository: musdev13/musutils
+          ref: dev
+          path: musutils
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: stable
+
+      - name: Add Windows target
+        run: rustup target add x86_64-pc-windows-gnu
+
+      - name: Install mingw-w64
+        run: sudo apt-get update && sudo apt-get install -y mingw-w64
+
+      - name: Build (Windows)
+        working-directory: rml
+        run: make build-windows
+
+      - name: Upload rml.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: rml-windows
+          path: rml/target/x86_64-pc-windows-gnu/release/rml.exe
+          if-no-files-found: error
+
+  release:
+    name: Create release
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download rml (Linux)
+        uses: actions/download-artifact@v4
+        with:
+          name: rml-linux
+          path: dist
+
+      - name: Download rml.exe (Windows)
+        uses: actions/download-artifact@v4
+        with:
+          name: rml-windows
+          path: dist
+
+      - name: Parse tag
+        id: parse
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          stripped="${tag#v}"
+          IFS='-' read -r rml_ver rmlib_ver musutils_ver <<< "$stripped"
+          if ! [[ "$rml_ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+             || ! [[ "$rmlib_ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+             || ! [[ "$musutils_ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::tag '${tag}' must be of the form v<X.Y.Z>-<X.Y.Z>-<X.Y.Z>, e.g. v0.9.0-0.9.0-0.4.0"
+            exit 1
+          fi
+          title="v${rml_ver} (rmlib: ${rmlib_ver}) (musutils: ${musutils_ver})"
+          echo "title=${title}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.parse.outputs.title }}
+          generate_release_notes: true
+          files: |
+            dist/rml
+            dist/rml.exe
