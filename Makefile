@@ -1,5 +1,6 @@
 .PHONY: all fmt fmt-check clippy clippy-no-default \
 	    check-default check-no-default check-ely check-fabric check-neoforge check-all check \
+	    check-windows \
 	    build build-windows dist clean help
 
 all: check
@@ -35,6 +36,9 @@ check-all: check-default check-no-default check-ely check-fabric check-neoforge
 
 check: fmt-check clippy clippy-no-default check-all
 
+check-windows:
+	cargo check --all-targets --target x86_64-pc-windows-gnu
+
 build:
 	cargo build --release
 
@@ -67,6 +71,9 @@ help:
 	@echo "  check-neoforge    cargo check with only 'neoforge'"
 	@echo "  check-all         run all of the above check-* targets"
 	@echo "  check             fmt-check + clippy + clippy-no-default + check-all"
+	@echo ""
+	@echo "  check-windows     cargo check --target x86_64-pc-windows-gnu"
+	@echo "                    (requires rustup target add x86_64-pc-windows-gnu + mingw-w64)"
 	@echo ""
 	@echo "  build             cargo build --release (Linux)"
 	@echo "  build-windows     cargo build --release --target x86_64-pc-windows-gnu"
