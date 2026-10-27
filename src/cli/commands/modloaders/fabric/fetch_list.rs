@@ -1,5 +1,5 @@
 use clap::Args;
-use rmlib::core::modloaders::fabric::fetch_list;
+use rmlib::extra::fabric::fetch_list;
 
 #[derive(Args, Debug)]
 pub struct FetchListArgs {

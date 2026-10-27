@@ -106,18 +106,20 @@ pub struct RunArgs {
     )]
     pub spawn_path: Option<PathBuf>,
 
+    #[cfg(feature = "fabric")]
+    #[cfg_attr(feature = "neoforge", arg(conflicts_with = "neoforge"))]
     #[arg(
         long,
         value_name = "FABRIC_VERSION",
-        conflicts_with = "neoforge",
         help = "Specify Fabric Loader version to run"
     )]
     pub fabric: Option<String>,
 
+    #[cfg(feature = "neoforge")]
+    #[cfg_attr(feature = "fabric", arg(conflicts_with = "fabric"))]
     #[arg(
         long,
         value_name = "NEOFORGE_VERSION",
-        conflicts_with = "fabric",
         help = "Specify NeoForge version to run"
     )]
     pub neoforge: Option<String>,
@@ -142,6 +144,16 @@ pub async fn handler(args: RunArgs) {
     let ely_flag = args.ely;
     #[cfg(not(feature = "ely"))]
     let ely_flag = false;
+
+    #[cfg(feature = "fabric")]
+    let fabric_version = args.fabric.as_deref();
+    #[cfg(not(feature = "fabric"))]
+    let fabric_version: Option<&str> = None;
+
+    #[cfg(feature = "neoforge")]
+    let neoforge_version = args.neoforge.as_deref();
+    #[cfg(not(feature = "neoforge"))]
+    let neoforge_version: Option<&str> = None;
 
     let natives_path = libs_path.join("natives");
 
@@ -171,8 +183,8 @@ pub async fn handler(args: RunArgs) {
     if args.just_command {
         match build_command(
             &args.version_id,
-            args.fabric.as_deref(),
-            args.neoforge.as_deref(),
+            fabric_version,
+            neoforge_version,
             &args.ram,
             &args.username,
             &args.uuid,
@@ -200,8 +212,8 @@ pub async fn handler(args: RunArgs) {
 
     run_client(
         &args.version_id,
-        args.fabric.as_deref(),
-        args.neoforge.as_deref(),
+        fabric_version,
+        neoforge_version,
         &args.ram,
         &args.username,
         &args.uuid,

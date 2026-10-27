@@ -17,7 +17,7 @@ pub struct InstallArgs {
 }
 
 pub async fn handler(args: InstallArgs) {
-    rmlib::core::modloaders::neoforge::install(
+    rmlib::extra::neoforge::install(
         args.version_id,
         args.neoforge_version,
         args.versions,

@@ -1,8 +1,11 @@
 use crate::cli::Cli;
 #[cfg(feature = "ely")]
 use crate::cli::commands::login::LoginCommands;
+#[cfg(any(feature = "fabric", feature = "neoforge"))]
 use crate::cli::commands::modloaders::ModloadersCommands;
+#[cfg(feature = "fabric")]
 use crate::cli::commands::modloaders::fabric::FabricCommands;
+#[cfg(feature = "neoforge")]
 use crate::cli::commands::modloaders::neoforge::NeoforgeCommands;
 use crate::cli::commands::{self, Commands, versions::VersionsCommands};
 use clap::Parser;
@@ -90,7 +93,9 @@ pub async fn handle_cli() -> bool {
                     commands::login::ely::handler(args).await;
                 }
             },
+            #[cfg(any(feature = "fabric", feature = "neoforge"))]
             Commands::Modloaders { subcommand } => match subcommand {
+                #[cfg(feature = "fabric")]
                 ModloadersCommands::Fabric { subcommand } => match subcommand {
                     FabricCommands::FetchList(args) => {
                         commands::modloaders::fabric::fetch_list::handler(args).await;
@@ -99,6 +104,7 @@ pub async fn handle_cli() -> bool {
                         commands::modloaders::fabric::install::handler(args).await;
                     }
                 },
+                #[cfg(feature = "neoforge")]
                 ModloadersCommands::Neoforge { subcommand } => match subcommand {
                     NeoforgeCommands::FetchList(args) => {
                         commands::modloaders::neoforge::fetch_list::handler(args).await;

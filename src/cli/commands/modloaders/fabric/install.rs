@@ -17,7 +17,7 @@ pub struct InstallArgs {
 }
 
 pub async fn handler(args: InstallArgs) {
-    rmlib::core::modloaders::fabric::install(
+    rmlib::extra::fabric::install(
         args.version_id,
         args.fabric_version,
         args.versions,

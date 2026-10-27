@@ -1,5 +1,5 @@
 use clap::Args;
-use rmlib::core::modloaders::neoforge::fetch_list;
+use rmlib::extra::neoforge::fetch_list;
 
 #[derive(Args, Debug)]
 pub struct FetchListArgs {
