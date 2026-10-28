@@ -2,6 +2,7 @@ use clap::Parser;
 
 mod commands;
 mod handler;
+mod preflight;
 
 pub use handler::handle_cli;
 

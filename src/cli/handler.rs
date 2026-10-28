@@ -40,6 +40,8 @@ pub async fn handle_cli() -> bool {
     }
 
     if let Some(command) = args.command {
+        crate::cli::preflight::warn_if_invalid_config();
+
         match command {
             Commands::Test => {
                 commands::test::handle();
