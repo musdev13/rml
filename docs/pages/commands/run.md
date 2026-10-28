@@ -29,6 +29,7 @@ run Minecraft client
 | `--libs <LIBS_PATH>` | **Optional.** Path to the libraries directory. | Config |
 | `-g, --game-path <GAME_PATH>` | **Optional.** Path to the game directory (working directory for launch). | `~/.minecraft` |
 | `-s, --spawn-path <SPAWN_PATH>` | **Optional.** Path to the directory from which the game is launched. | `GAME_PATH` |
+| `--java <JAVA_PATH>` | **Optional.** Path to the Java executable to use for launching. | `java` from `PATH` |
 | `--fabric <FABRIC_VERSION>` | **Optional.** Specify Fabric Loader version to run. Conflicts with `--neoforge`. | — |
 | `--neoforge <NEOFORGE_VERSION>` | **Optional.** Specify NeoForge version to run. Conflicts with `--fabric`. | — |
 
@@ -39,6 +40,14 @@ By default, `rml` uses the configured paths for versions, assets, and libraries.
 The game directory defaults to `~/.minecraft`.
 
 If `--spawn-path` is not specified, it defaults to the same path as `--game-path`.
+
+### Java executable
+
+By default, `rml` launches the game using `java` from `PATH`.
+
+Use `--java <JAVA_PATH>` to point at a specific Java executable (e.g. a different JDK version, or a full path like `/usr/lib/jvm/temurin-21/bin/java`). The path is used as-is — no shell expansion beyond what the OS performs.
+
+This option is ignored by `--just-command` (that flag only prints the generated command; the executable is always rendered as `java`).
 
 ### Modloaders
 
@@ -124,6 +133,12 @@ Use custom versions, libraries, and assets directories:
 
 ```sh
 rml run 26.2 --versions ./versions --libs ./libraries --assets ./assets
+```
+
+Use a specific Java executable:
+
+```sh
+rml run 26.2 --java /usr/lib/jvm/temurin-21/bin/java
 ```
 
 Print the generated launch command without starting Minecraft:
