@@ -9,7 +9,7 @@ pub struct DataArgs {
     pub json: bool,
 }
 
-pub async fn handler(args: DataArgs, auth_path: Option<std::path::PathBuf>) {
+pub async fn handler(args: DataArgs, auth_path: Option<std::path::PathBuf>, save: bool) {
     let profile = match rmlib::core::auth::get_data_at(auth_path.as_deref()).await {
         Ok(p) => p,
         Err(e) => {
@@ -28,6 +28,33 @@ pub async fn handler(args: DataArgs, auth_path: Option<std::path::PathBuf>) {
             Status::Warn.as_colored_str()
         );
     }
+
+    #[cfg(feature = "profiles")]
+    if save {
+        use rmlib::extra::profiles::{Profile, ProfileKind, save_profile_at};
+        let stored = Profile {
+            username: profile.username.clone(),
+            uuid: Some(profile.uuid.clone()),
+            access_token: profile.access_token.clone(),
+            client_token: None,
+            xuid: Some(profile.xuid.clone()),
+            has_license: Some(profile.has_license),
+        };
+        match save_profile_at(auth_path.as_deref(), ProfileKind::Ms, &stored) {
+            Ok(path) => eprintln!(
+                "{}: profile saved to {}",
+                Status::Ok.as_colored_str(),
+                path.display()
+            ),
+            Err(e) => eprintln!(
+                "{}: failed to save profile: {}",
+                Status::Err.as_colored_str(),
+                e
+            ),
+        }
+    }
+    #[cfg(not(feature = "profiles"))]
+    let _ = save;
 
     if args.json {
         match serde_json::to_string_pretty(&profile) {

@@ -16,7 +16,9 @@ authenticate with an Ely.by account and optionally install the Ely.by Authlib pa
 | `--patch`               | Installs the Ely.by Authlib patch.                                                                | —       |
 | `--libs <LIBS_PATH>`    | **Optional.** Path to the libraries directory. Requires `--patch`.                               | —       |
 | `-j, --json`            | Outputs authentication information in JSON format. Conflicts with `--ask`.                       | —       |
-| `-h, --help`             | Displays help information.                                                                        | —       |
+| `--save`                | After successful authentication, store the account as a profile under `<auth-path>/profiles/ely/<username>.json`. | —       |
+| `--auth-path <DIR>`     | **Optional.** Directory holding saved profiles. Defaults to `auth_path` from config.              | Config  |
+| `-h, --help`            | Displays help information.                                                                        | —       |
 
 ### Authentication
 
@@ -47,6 +49,24 @@ rml login ely --login Musek --passwd mypassword --json
 ```
 
 The JSON output is displayed immediately after successful authentication.
+
+### Saving a profile
+
+Use `--save` to store the authenticated account as a reusable profile:
+
+```sh
+rml login ely --login Musek --passwd mypassword --save
+```
+
+The profile is written to `<auth-path>/profiles/ely/<username>.json` (the username comes from the profile returned by Ely.by). It can then be used by `rml run -p -e -u <username> …` to launch without passing the token on the command line.
+
+Store the profile in a custom auth directory:
+
+```sh
+rml login ely --ask --save --auth-path ./my-auth
+```
+
+The profile contains the access token and client token, so treat the file as sensitive.
 
 ### Authlib Patch
 
@@ -80,6 +100,12 @@ Authenticate and output the result as JSON:
 
 ```sh
 rml login ely --login Musek --passwd mypassword --json
+```
+
+Authenticate and save a reusable profile:
+
+```sh
+rml login ely --ask --save
 ```
 
 Install the Ely.by Authlib patch:

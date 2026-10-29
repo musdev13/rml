@@ -7,10 +7,11 @@ repository = "https://github.com/musdev13/rml"
 
 
 [features]
-default = ["ely", "fabric", "neoforge"]
+default = ["ely", "fabric", "neoforge", "profiles"]
 ely = ["rmlib/ely"]
 fabric = ["rmlib/fabric"]
 neoforge = ["rmlib/neoforge"]
+profiles = ["rmlib/profiles"]
 
 [dependencies]
 musutils = { path = "../musutils", features = ["vec-v2", "types-v2", "color-v2"] }
