@@ -45,4 +45,5 @@ nav:
           - neoforge: pages/commands/modloaders/neoforge.md
       - login:
           - ely: pages/commands/login/ely.md
+          - ms: pages/commands/login/ms.md
       - run: pages/commands/run.md
