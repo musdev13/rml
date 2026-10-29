@@ -1,6 +1,8 @@
 use clap::Args;
 use musutils::types::Status;
 
+use super::confirm::wait_for_key;
+
 #[derive(Args, Debug)]
 pub struct DataArgs {
     #[arg(short = 'j', long = "json", help = "Print the result as JSON")]
@@ -38,6 +40,8 @@ pub async fn handler(args: DataArgs, auth_path: Option<std::path::PathBuf>) {
         }
         return;
     }
+
+    wait_for_key("Press any key to show profile data (personal token will be printed)...");
 
     let line = musutils::types::line::draw_colored('=', 35, musutils::color::Colors::Yellow);
 

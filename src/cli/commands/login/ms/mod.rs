@@ -1,3 +1,4 @@
+pub mod confirm;
 pub mod data;
 pub mod login;
 pub mod logout;

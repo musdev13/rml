@@ -27,13 +27,18 @@ rml login ms login
 
 Starts the interactive Microsoft **device code** login:
 
-1. Prints a verification URL and a user code.
+1. Prints a verification URL and a user code (to **stderr**, so a piped stdout stays clean).
 2. Waits until you confirm in the browser.
 3. Saves the resulting tokens to `ms.json`.
+4. Without `--json`, asks for a key press before printing the tokens — they are personal data.
 
 | Flag | Meaning |
 |---|---|
-| `-j`, `--json` | Print the saved tokens as JSON instead of the formatted output. |
+| `-j`, `--json` | Print the saved tokens as JSON instead of the formatted output. Skips the key-press prompt. |
+
+```sh
+rml login ms login -j | wl-copy   # stdout is the tokens JSON only
+```
 
 ```sh
 rml login ms login --json
@@ -57,9 +62,11 @@ Refreshes the saved session without user interaction: reads the `refresh_token` 
 
 Fails if there is no saved `ms.json` — run `rml login ms login` first.
 
+Without `--json`, asks for a key press before printing the refreshed tokens (personal data). With `--json`, stdout is the tokens JSON only.
+
 | Flag | Meaning |
 |---|---|
-| `-j`, `--json` | Print the refreshed tokens as JSON. |
+| `-j`, `--json` | Print the refreshed tokens as JSON. Skips the key-press prompt. |
 
 ## `rml login ms data`
 
@@ -76,9 +83,11 @@ Retrieves the Minecraft profile. This is the high-level command:
 
 If the account has no Minecraft license, a warning is printed and the license-dependent fields contain the `"no_license"` placeholder — the command still prints all data it could obtain (for example `xuid`).
 
+Without `--json`, asks for a key press before printing the profile — it contains a personal access token. With `--json`, stdout is the profile JSON only.
+
 | Flag | Meaning |
 |---|---|
-| `-j`, `--json` | Print the profile as JSON. |
+| `-j`, `--json` | Print the profile as JSON. Skips the key-press prompt. |
 
 ```sh
 rml login ms data --json
@@ -115,7 +124,7 @@ rml login ms refresh    # refresh the session explicitly
 rml login ms logout     # log out
 ```
 
-For scripting, `rml login ms data --json` is usually enough — it handles refresh and login internally.
+For scripting, `rml login ms data --json` is usually enough — it handles refresh and login internally. With `--json`, all human-readable output (device-code banner, prompts, warnings) goes to stderr, so `… --json | jq` / `| wl-copy` receives clean JSON.
 
 ## See also
 
