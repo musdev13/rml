@@ -26,7 +26,7 @@ pub async fn handle_cli() -> bool {
             .join(", ");
 
         println!(
-            "{} {}\n{} {} ({})\n{} {} ({})",
+            "{} {}\n{} {} ({})\n{} {} ({})\nv{}-{}-{}",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION"),
             rmlib::NAME,
@@ -35,6 +35,9 @@ pub async fn handle_cli() -> bool {
             musutils::NAME,
             musutils::VERSION,
             musutils_mods,
+            env!("CARGO_PKG_VERSION"),
+            rmlib::VERSION,
+            musutils::VERSION,
         );
         return true;
     }
