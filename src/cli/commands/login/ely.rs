@@ -32,6 +32,18 @@ pub struct ElyArgs {
 
     #[arg(short = 'j', long = "json", conflicts_with_all = ["ask"])]
     pub json: bool,
+
+    #[cfg(feature = "profiles")]
+    #[arg(long, help = "Save the account as a profile")]
+    pub save: bool,
+
+    #[cfg(feature = "profiles")]
+    #[arg(
+        long = "auth-path",
+        value_name = "DIR",
+        help = "Directory holding saved profiles (default: auth_path from config)"
+    )]
+    pub auth_path: Option<PathBuf>,
 }
 
 fn prompt_login() -> io::Result<String> {
@@ -103,6 +115,31 @@ pub async fn handler(args: ElyArgs) {
             return;
         }
     };
+
+    #[cfg(feature = "profiles")]
+    if args.save {
+        use rmlib::extra::profiles::{Profile, ProfileKind, save_profile_at};
+        let profile = Profile {
+            username: res.profile_name.clone(),
+            uuid: Some(res.profile_id.clone()),
+            access_token: res.access_token.clone(),
+            client_token: Some(res.client_token.clone()),
+            xuid: None,
+            has_license: None,
+        };
+        match save_profile_at(args.auth_path.as_deref(), ProfileKind::Ely, &profile) {
+            Ok(path) => eprintln!(
+                "{}: profile saved to {}",
+                Status::Ok.as_colored_str(),
+                path.display()
+            ),
+            Err(e) => eprintln!(
+                "{}: failed to save profile: {}",
+                Status::Err.as_colored_str(),
+                e
+            ),
+        }
+    }
 
     if args.json {
         match serde_json::to_string_pretty(&res) {

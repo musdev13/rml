@@ -26,7 +26,7 @@ pub async fn handle_cli() -> bool {
             .join(", ");
 
         println!(
-            "{} {}\n{} {} ({})\n{} {} ({})",
+            "{} {}\n{} {} ({})\n{} {} ({})\nv{}-{}-{}",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION"),
             rmlib::NAME,
@@ -35,6 +35,9 @@ pub async fn handle_cli() -> bool {
             musutils::NAME,
             musutils::VERSION,
             musutils_mods,
+            env!("CARGO_PKG_VERSION"),
+            rmlib::VERSION,
+            musutils::VERSION,
         );
         return true;
     }
@@ -94,20 +97,26 @@ pub async fn handle_cli() -> bool {
                 LoginCommands::Ely(args) => {
                     commands::login::ely::handler(args).await;
                 }
-                LoginCommands::Ms(ms) => match ms.subcommand {
-                    MsCommands::Login(args) => {
-                        commands::login::ms::login::handler(args, ms.auth_path).await;
+                LoginCommands::Ms(ms) => {
+                    #[cfg(feature = "profiles")]
+                    let save = ms.save;
+                    #[cfg(not(feature = "profiles"))]
+                    let save = false;
+                    match ms.subcommand {
+                        MsCommands::Login(args) => {
+                            commands::login::ms::login::handler(args, ms.auth_path, save).await;
+                        }
+                        MsCommands::Refresh(args) => {
+                            commands::login::ms::refresh::handler(args, ms.auth_path).await;
+                        }
+                        MsCommands::Data(args) => {
+                            commands::login::ms::data::handler(args, ms.auth_path, save).await;
+                        }
+                        MsCommands::Logout(args) => {
+                            commands::login::ms::logout::handler(args, ms.auth_path);
+                        }
                     }
-                    MsCommands::Refresh(args) => {
-                        commands::login::ms::refresh::handler(args, ms.auth_path).await;
-                    }
-                    MsCommands::Data(args) => {
-                        commands::login::ms::data::handler(args, ms.auth_path).await;
-                    }
-                    MsCommands::Logout(args) => {
-                        commands::login::ms::logout::handler(args, ms.auth_path);
-                    }
-                },
+                }
             },
             #[cfg(any(feature = "fabric", feature = "neoforge"))]
             Commands::Modloaders { subcommand } => match subcommand {

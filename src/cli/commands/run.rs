@@ -19,30 +19,37 @@ pub struct RunArgs {
     )]
     pub ram: String,
 
-    #[arg(
-        short = 'u',
-        long,
-        default_value = "MusPlayer",
-        help = "Player nickname"
-    )]
-    pub username: String,
+    #[arg(short = 'u', long, help = "Player nickname")]
+    pub username: Option<String>,
 
-    #[arg(
-        long,
-        default_value = "00000000-0000-0000-0000-000000000000",
-        help = "Player UUID"
-    )]
-    pub uuid: String,
+    #[arg(long, help = "Player UUID")]
+    pub uuid: Option<String>,
 
-    #[arg(long, default_value = "null", help = "Authentication access token")]
-    pub token: String,
+    #[arg(long, help = "Authentication access token")]
+    pub token: Option<String>,
 
-    #[arg(long, default_value = "noxuid", help = "Xbox User ID")]
-    pub xuid: String,
+    #[arg(long, help = "Xbox User ID")]
+    pub xuid: Option<String>,
 
     #[cfg(feature = "ely")]
     #[arg(short = 'e', long, help = "Enable Ely.by skin system / authentication")]
     pub ely: bool,
+
+    #[cfg(feature = "profiles")]
+    #[arg(
+        short = 'p',
+        long,
+        help = "Load account data from a saved profile (ely when -e is set, ms otherwise)"
+    )]
+    pub profile: bool,
+
+    #[cfg(feature = "profiles")]
+    #[arg(
+        long = "auth-path",
+        value_name = "DIR",
+        help = "Directory holding saved profiles (default: auth_path from config)"
+    )]
+    pub auth_path: Option<PathBuf>,
 
     #[arg(short = 'b', long, help = "Apply betacraft fix for pre-1.6 versions")]
     pub betafix: bool,
@@ -132,20 +139,49 @@ pub struct RunArgs {
     pub neoforge: Option<String>,
 }
 
+#[cfg(feature = "profiles")]
+fn resolve_from_profile(args: &RunArgs) -> Option<rmlib::extra::profiles::Profile> {
+    if !args.profile {
+        return None;
+    }
+    let username = args.username.as_deref().unwrap_or("MusPlayer");
+    let kind = if cfg!(feature = "ely") && args.ely {
+        rmlib::extra::profiles::ProfileKind::Ely
+    } else {
+        rmlib::extra::profiles::ProfileKind::Ms
+    };
+    match rmlib::extra::profiles::load_profile_at(args.auth_path.as_deref(), kind, username) {
+        Ok(profile) => profile,
+        Err(e) => {
+            eprintln!(
+                "{}: failed to load profile for {}: {}",
+                musutils::types::Status::Warn.as_colored_str(),
+                username,
+                e
+            );
+            None
+        }
+    }
+}
+
 pub async fn handler(args: RunArgs) {
     let versions_path = args
         .versions
+        .clone()
         .unwrap_or_else(|| PathBuf::from(config::get_versions_path()));
     let assets_path = args
         .assets
+        .clone()
         .unwrap_or_else(|| PathBuf::from(config::get_assets_path()));
     let libs_path = args
         .libs
+        .clone()
         .unwrap_or_else(|| PathBuf::from(config::get_libs_path()));
     let game_path = args
         .game_path
+        .clone()
         .unwrap_or_else(|| PathBuf::from("~/.minecraft"));
-    let spawn_path = args.spawn_path.unwrap_or_else(|| game_path.clone());
+    let spawn_path = args.spawn_path.clone().unwrap_or_else(|| game_path.clone());
 
     #[cfg(feature = "ely")]
     let ely_flag = args.ely;
@@ -161,6 +197,55 @@ pub async fn handler(args: RunArgs) {
     let neoforge_version = args.neoforge.as_deref();
     #[cfg(not(feature = "neoforge"))]
     let neoforge_version: Option<&str> = None;
+
+    #[cfg(feature = "profiles")]
+    let profile = resolve_from_profile(&args);
+    #[cfg(feature = "profiles")]
+    if args.profile && profile.is_none() {
+        eprintln!(
+            "{}: profile not found; falling back to CLI values / defaults",
+            musutils::types::Status::Warn.as_colored_str()
+        );
+    }
+
+    #[cfg(feature = "profiles")]
+    let (profile_username, profile_uuid, profile_token, profile_xuid) = match &profile {
+        Some(p) => (
+            Some(p.username.clone()),
+            p.uuid.clone(),
+            Some(p.access_token.clone()),
+            p.xuid.clone(),
+        ),
+        None => (None, None, None, None),
+    };
+    #[cfg(not(feature = "profiles"))]
+    let (profile_username, profile_uuid, profile_token, profile_xuid): (
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+    ) = (None, None, None, None);
+
+    let username = args
+        .username
+        .clone()
+        .or(profile_username)
+        .unwrap_or_else(|| "MusPlayer".to_string());
+    let uuid = args
+        .uuid
+        .clone()
+        .or(profile_uuid)
+        .unwrap_or_else(|| "00000000-0000-0000-0000-000000000000".to_string());
+    let token = args
+        .token
+        .clone()
+        .or(profile_token)
+        .unwrap_or_else(|| "null".to_string());
+    let xuid = args
+        .xuid
+        .clone()
+        .or(profile_xuid)
+        .unwrap_or_else(|| "noxuid".to_string());
 
     let natives_path = libs_path.join("natives");
 
@@ -194,10 +279,10 @@ pub async fn handler(args: RunArgs) {
             fabric_version,
             neoforge_version,
             &args.ram,
-            &args.username,
-            &args.uuid,
-            &args.xuid,
-            &args.token,
+            &username,
+            &uuid,
+            &xuid,
+            &token,
             ely_flag,
             args.betafix,
             &v_str,
@@ -223,10 +308,10 @@ pub async fn handler(args: RunArgs) {
         fabric_version,
         neoforge_version,
         &args.ram,
-        &args.username,
-        &args.uuid,
-        &args.xuid,
-        &args.token,
+        &username,
+        &uuid,
+        &xuid,
+        &token,
         ely_flag,
         args.betafix,
         &v_str,

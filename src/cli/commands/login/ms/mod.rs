@@ -18,6 +18,14 @@ pub struct MsArgs {
     )]
     pub auth_path: Option<PathBuf>,
 
+    #[cfg(feature = "profiles")]
+    #[arg(
+        long,
+        global = true,
+        help = "Save the account as a profile (applies to login and data)"
+    )]
+    pub save: bool,
+
     #[command(subcommand)]
     pub subcommand: MsCommands,
 }

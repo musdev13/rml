@@ -6,18 +6,20 @@ Backed by `rmlib::core::auth`. Tokens are stored in `ms.json` inside the auth di
 
 Available with the default build and with `--no-default-features` — unlike [`rml login ely`](ely.md), it does not depend on the `ely` feature.
 
-## `--auth-path`
+## `--auth-path` and `--save`
 
-All `login ms` subcommands accept a global `--auth-path <DIR>` flag, placed after `ms`:
+Both are global for `login ms`, placed after `ms`:
 
 ```sh
-rml login ms --auth-path /path/to/auth data
+rml login ms --save data
 ```
 
-- With `--auth-path` — `ms.json` is read from and written to `DIR`.
-- Without it — the `auth_path` from the config is used.
+| Flag | Meaning |
+|---|---|
+| `--auth-path <DIR>` | Use `DIR` as the auth directory instead of the configured `auth_path`. Applies to `ms.json` and to saved profiles. |
+| `--save` | After a successful login / profile retrieval, store the account as a profile under `<auth-path>/profiles/ms/<username>.json`. Applies to `login` and `data`. |
 
-The flag is `global`, so it can also be given after the subcommand (`rml login ms data --auth-path DIR`).
+The flags are `global`, so they can also be given after the subcommand.
 
 ## `rml login ms login`
 
@@ -32,24 +34,15 @@ Starts the interactive Microsoft **device code** login:
 3. Saves the resulting tokens to `ms.json`.
 4. Without `--json`, asks for a key press before printing the tokens — they are personal data.
 
+With `--save`, the account is also resolved and stored as a profile (`profiles/ms/<username>.json`).
+
 | Flag | Meaning |
 |---|---|
 | `-j`, `--json` | Print the saved tokens as JSON instead of the formatted output. Skips the key-press prompt. |
 
 ```sh
 rml login ms login -j | wl-copy   # stdout is the tokens JSON only
-```
-
-```sh
-rml login ms login --json
-```
-
-```json
-{
-  "access_token": "…",
-  "refresh_token": "…",
-  "expires_in": 3600
-}
+rml login ms login --save         # log in and save a reusable profile
 ```
 
 ## `rml login ms refresh`
@@ -85,22 +78,15 @@ If the account has no Minecraft license, a warning is printed and the license-de
 
 Without `--json`, asks for a key press before printing the profile — it contains a personal access token. With `--json`, stdout is the profile JSON only.
 
+With `--save`, the profile is stored under `<auth-path>/profiles/ms/<username>.json`.
+
 | Flag | Meaning |
 |---|---|
 | `-j`, `--json` | Print the profile as JSON. Skips the key-press prompt. |
 
 ```sh
 rml login ms data --json
-```
-
-```json
-{
-  "username": "Steve",
-  "uuid": "…",
-  "access_token": "…",
-  "xuid": "…",
-  "has_license": true
-}
+rml login ms data --save         # fetch the profile and save it for `rml run -p`
 ```
 
 ## `rml login ms logout`
@@ -118,10 +104,10 @@ Deletes `ms.json` from the auth directory — logs the account out on this machi
 ## Typical flow
 
 ```sh
-rml login ms login      # first time
-rml login ms data       # get the profile (refreshes or logs in as needed)
-rml login ms refresh    # refresh the session explicitly
-rml login ms logout     # log out
+rml login ms login --save   # first time: log in and save a profile
+rml login ms data           # get the profile (refreshes or logs in as needed)
+rml login ms refresh        # refresh the session explicitly
+rml login ms logout         # log out
 ```
 
 For scripting, `rml login ms data --json` is usually enough — it handles refresh and login internally. With `--json`, all human-readable output (device-code banner, prompts, warnings) goes to stderr, so `… --json | jq` / `| wl-copy` receives clean JSON.
@@ -129,4 +115,5 @@ For scripting, `rml login ms data --json` is usually enough — it handles refre
 ## See also
 
 - [Init](../../getting-started/init.md) — `auth_path` in `paths.json`.
+- [Run](../run.md) — `rml run -p` loads a saved profile.
 - [Ely.by login](ely.md) — the alternative (non-official) auth flow.

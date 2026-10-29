@@ -9,7 +9,7 @@ pub struct LoginArgs {
     pub json: bool,
 }
 
-pub async fn handler(args: LoginArgs, auth_path: Option<std::path::PathBuf>) {
+pub async fn handler(args: LoginArgs, auth_path: Option<std::path::PathBuf>, save: bool) {
     let device = match rmlib::core::auth::request_device_code().await {
         Ok(d) => d,
         Err(e) => {
@@ -55,6 +55,13 @@ pub async fn handler(args: LoginArgs, auth_path: Option<std::path::PathBuf>) {
         }
     };
 
+    #[cfg(feature = "profiles")]
+    if save {
+        save_ms_profile(&tokens, auth_path.as_deref()).await;
+    }
+    #[cfg(not(feature = "profiles"))]
+    let _ = save;
+
     if args.json {
         match serde_json::to_string_pretty(&tokens) {
             Ok(pretty) => println!("{pretty}"),
@@ -88,4 +95,42 @@ pub async fn handler(args: LoginArgs, auth_path: Option<std::path::PathBuf>) {
         tokens.refresh_token
     );
     println!("{line}");
+}
+
+#[cfg(feature = "profiles")]
+async fn save_ms_profile(
+    tokens: &rmlib::core::auth::MsTokens,
+    auth_path: Option<&std::path::Path>,
+) {
+    use rmlib::extra::profiles::{Profile, ProfileKind, save_profile_at};
+
+    match rmlib::core::auth::get_profile(&tokens.access_token).await {
+        Ok(profile_data) => {
+            let profile = Profile {
+                username: profile_data.username.clone(),
+                uuid: Some(profile_data.uuid.clone()),
+                access_token: profile_data.access_token.clone(),
+                client_token: None,
+                xuid: Some(profile_data.xuid.clone()),
+                has_license: Some(profile_data.has_license),
+            };
+            match save_profile_at(auth_path, ProfileKind::Ms, &profile) {
+                Ok(path) => eprintln!(
+                    "{}: profile saved to {}",
+                    Status::Ok.as_colored_str(),
+                    path.display()
+                ),
+                Err(e) => eprintln!(
+                    "{}: failed to save profile: {}",
+                    Status::Err.as_colored_str(),
+                    e
+                ),
+            }
+        }
+        Err(e) => eprintln!(
+            "{}: failed to resolve profile for saving: {}",
+            Status::Warn.as_colored_str(),
+            e
+        ),
+    }
 }

@@ -73,6 +73,7 @@ The CLI is a thin layer on top of `rmlib`. `rml` must not re-implement launcher 
    rml <ver>
    rmlib <ver> (<modules>)
    musutils <ver> (<modules>)
+   v<rml>-<rmlib>-<musutils>
    ```
    The module lists come from `rmlib::available_modules()` and `musutils::available_modules()`. Do not hardcode them. Do not change the output format — only the actual module lists change with the build. Building with `--no-default-features` should show only `core` in the `rmlib` list.
 
@@ -238,6 +239,7 @@ CLI — тонкий слой над `rmlib`. `rml` не должен занов
    rml <ver>
    rmlib <ver> (<modules>)
    musutils <ver> (<modules>)
+   v<rml>-<rmlib>-<musutils>
    ```
    Списки модулей берутся из `rmlib::available_modules()` и `musutils::available_modules()`. Не хардкодьте их. Формат вывода не меняется — меняются только фактические списки модулей в зависимости от сборки. При сборке с `--no-default-features` в списке `rmlib` должен остаться только `core`.
 
