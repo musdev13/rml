@@ -1,5 +1,4 @@
 pub mod init;
-#[cfg(feature = "ely")]
 pub mod login;
 #[cfg(any(feature = "fabric", feature = "neoforge"))]
 pub mod modloaders;
@@ -8,7 +7,6 @@ pub mod test;
 pub mod versions;
 
 use clap::Subcommand;
-#[cfg(feature = "ely")]
 use login::LoginCommands;
 #[cfg(any(feature = "fabric", feature = "neoforge"))]
 use modloaders::ModloadersCommands;
@@ -28,7 +26,6 @@ pub enum Commands {
         subcommand: VersionsCommands,
     },
     Run(RunArgs),
-    #[cfg(feature = "ely")]
     Login {
         #[command(subcommand)]
         subcommand: LoginCommands,

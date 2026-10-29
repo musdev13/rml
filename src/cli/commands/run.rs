@@ -106,6 +106,13 @@ pub struct RunArgs {
     )]
     pub spawn_path: Option<PathBuf>,
 
+    #[arg(
+        long,
+        value_name = "JAVA_PATH",
+        help = "Path to the Java executable to use (defaults to `java` from PATH)"
+    )]
+    pub java: Option<PathBuf>,
+
     #[cfg(feature = "fabric")]
     #[cfg_attr(feature = "neoforge", arg(conflicts_with = "neoforge"))]
     #[arg(
@@ -179,6 +186,7 @@ pub async fn handler(args: RunArgs) {
     let n_str = natives_path.to_string_lossy();
     let g_str = game_path.to_string_lossy();
     let s_str = spawn_path.to_string_lossy();
+    let java_str = args.java.as_ref().map(|p| p.to_string_lossy().into_owned());
 
     if args.just_command {
         match build_command(
@@ -227,6 +235,7 @@ pub async fn handler(args: RunArgs) {
         &n_str,
         &g_str,
         &s_str,
+        java_str.as_deref(),
         &custom_jvm_args,
         &custom_game_args,
     )

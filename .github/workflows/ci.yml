@@ -46,7 +46,7 @@ jobs:
 
   check-windows:
     name: Rust check (Windows target)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout rml
@@ -73,14 +73,15 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Install mingw-w64
+        run: choco install mingw -y --no-progress
+
       - name: Add Windows target
         run: rustup target add x86_64-pc-windows-gnu
 
-      - name: Install mingw-w64
-        run: sudo apt-get update && sudo apt-get install -y mingw-w64
-
       - name: Check (Windows target)
         working-directory: rml
+        shell: bash
         run: make check-windows
 
   docs:

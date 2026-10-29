@@ -1,6 +1,6 @@
 use crate::cli::Cli;
-#[cfg(feature = "ely")]
 use crate::cli::commands::login::LoginCommands;
+use crate::cli::commands::login::ms::MsCommands;
 #[cfg(any(feature = "fabric", feature = "neoforge"))]
 use crate::cli::commands::modloaders::ModloadersCommands;
 #[cfg(feature = "fabric")]
@@ -40,6 +40,8 @@ pub async fn handle_cli() -> bool {
     }
 
     if let Some(command) = args.command {
+        crate::cli::preflight::warn_if_invalid_config();
+
         match command {
             Commands::Test => {
                 commands::test::handle();
@@ -87,11 +89,25 @@ pub async fn handle_cli() -> bool {
             Commands::Run(args) => {
                 commands::run::handler(args).await;
             }
-            #[cfg(feature = "ely")]
             Commands::Login { subcommand } => match subcommand {
+                #[cfg(feature = "ely")]
                 LoginCommands::Ely(args) => {
                     commands::login::ely::handler(args).await;
                 }
+                LoginCommands::Ms(ms) => match ms.subcommand {
+                    MsCommands::Login(args) => {
+                        commands::login::ms::login::handler(args, ms.auth_path).await;
+                    }
+                    MsCommands::Refresh(args) => {
+                        commands::login::ms::refresh::handler(args, ms.auth_path).await;
+                    }
+                    MsCommands::Data(args) => {
+                        commands::login::ms::data::handler(args, ms.auth_path).await;
+                    }
+                    MsCommands::Logout(args) => {
+                        commands::login::ms::logout::handler(args, ms.auth_path);
+                    }
+                },
             },
             #[cfg(any(feature = "fabric", feature = "neoforge"))]
             Commands::Modloaders { subcommand } => match subcommand {
