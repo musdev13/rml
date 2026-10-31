@@ -33,7 +33,7 @@ Flags are global, so they can be given before or after the subcommand.
 | `user-projects` | Projects of a user. |
 | `team` | Team members. |
 | `tags` | Tag directories (`categories`, `loaders`, `game-versions`, `project-types`). |
-| `install` | Install a project (auto-selecting a compatible version). |
+| `install` | Install one or more projects (auto-selecting compatible versions). |
 | `install-version` | Install a specific version. |
 | `install-hash` | Install the version containing a given file hash. |
 | `install-datapack` | Install a datapack into a world. |
@@ -104,7 +104,7 @@ rml modrinth tags <categories|loaders|game-versions|project-types>
 ## Installation
 
 ```sh
-rml modrinth install <SLUG_OR_ID> [OPTIONS]
+rml modrinth install <SLUG_OR_ID>... [OPTIONS]
 rml modrinth install-version <VERSION_ID> [OPTIONS]
 rml modrinth install-hash <HASH> [OPTIONS]
 rml modrinth install-datapack <SLUG_OR_ID> -w <WORLD> [OPTIONS]
@@ -134,6 +134,15 @@ Without `--install-dir`, the target is chosen by content type:
 
 `install` selects a version matching `--mc` / `--loader` / `--version-type`; if no compatible version exists, the command fails instead of installing a random one.
 
+`install` accepts **several** projects at once. Both forms are equivalent:
+
+```sh
+rml modrinth install so-big-250 bcOsQHnC --game-path ./game --mc 26.3 --loader fabric --deps
+rml modrinth install "so-big-250 bcOsQHnC" --game-path ./game --mc 26.3 --loader fabric --deps
+```
+
+Each target is installed with its own required dependencies; a failure for one target does not stop the others, and already-downloaded files whose SHA-1 matches are not downloaded again.
+
 `install-datapack` requires `--game-path` and an existing world directory `saves/<WORLD>/`; it is never created.
 
 With `--deps`, only **required** dependencies are installed. Any required dependency that could not be installed is reported on stderr:
@@ -159,7 +168,7 @@ rml modrinth search sodium -j | jq '.hits[].title'
 rml modrinth project sodium -j | wl-copy
 ```
 
-For install commands the JSON is an `InstallResult` with `installed` and `skipped` arrays.
+For install commands the JSON is an `InstallResult` with `installed` and `skipped` arrays. For multi-target `install`, the results are merged into one `InstallResult`.
 
 ## Errors
 
