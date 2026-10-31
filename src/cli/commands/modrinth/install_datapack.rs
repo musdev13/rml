@@ -49,21 +49,8 @@ pub async fn handler(args: InstallDatapackArgs, game_path: Option<PathBuf>, json
             }
         };
 
-    if json {
-        match serde_json::to_string_pretty(&result) {
-            Ok(s) => println!("{s}"),
-            Err(e) => eprintln!("{}: {}", Status::Err.as_colored_str(), e),
-        }
-        return;
+    if !json {
+        println!("{}: world {:?}", Status::Note.as_colored_str(), args.world);
     }
-
-    println!(
-        "{}: installed {} datapack file(s) into world {:?}",
-        Status::Ok.as_colored_str(),
-        result.installed.len(),
-        args.world
-    );
-    for f in &result.installed {
-        println!("- {} ({} bytes)", f.path.display(), f.bytes);
-    }
+    super::output::print_result(&result, json);
 }

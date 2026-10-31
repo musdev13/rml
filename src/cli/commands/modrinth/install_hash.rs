@@ -32,20 +32,5 @@ pub async fn handler(args: InstallHashArgs, game_path: Option<PathBuf>, json: bo
         }
     };
 
-    if json {
-        match serde_json::to_string_pretty(&result) {
-            Ok(s) => println!("{s}"),
-            Err(e) => eprintln!("{}: {}", Status::Err.as_colored_str(), e),
-        }
-        return;
-    }
-
-    println!(
-        "{}: installed {} file(s)",
-        Status::Ok.as_colored_str(),
-        result.installed.len()
-    );
-    for f in &result.installed {
-        println!("- {} ({} bytes)", f.path.display(), f.bytes);
-    }
+    super::output::print_result(&result, json);
 }

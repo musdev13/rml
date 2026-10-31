@@ -4,6 +4,7 @@ pub mod install_datapack;
 pub mod install_hash;
 pub mod install_version;
 pub mod members;
+pub mod output;
 pub mod project;
 pub mod project_by_hash;
 pub mod search;

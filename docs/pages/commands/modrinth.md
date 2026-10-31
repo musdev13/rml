@@ -68,8 +68,23 @@ rml modrinth project-by-hash <HASH>
 rml modrinth versions <SLUG_OR_ID> [--game-version VER]... [--loader LOADER]... [--type release|beta|alpha]
 rml modrinth version <VERSION_ID>
 rml modrinth version-by-hash <HASH>
-rml modrinth deps <SLUG_OR_ID>
+rml modrinth deps <SLUG_OR_ID> [OPTIONS]
 rml modrinth members <SLUG_OR_ID>
+```
+
+`deps` options:
+
+| Option | Meaning |
+|---|---|
+| `--version <VERSION_ID>` | Show dependencies of this specific version only. |
+| `--mc <VERSION>` | Restrict to versions for this Minecraft version. |
+| `--loader <LOADER>` | Restrict to versions for this loader. |
+| `--version-type <TYPE>` | `release`, `beta`, `alpha`. |
+
+Without `--version`, `deps` aggregates dependencies over the project versions that match the filters. Without any filters it covers all versions — a dependency may come from a version unrelated to your target, so pass `--mc` / `--loader` when checking compatibility. With `--version`, the filters are ignored and only that version's dependencies are shown.
+
+```sh
+rml modrinth deps so-big-250 --mc 26.3 --loader fabric
 ```
 
 ## Users and teams
@@ -121,6 +136,14 @@ Without `--install-dir`, the target is chosen by content type:
 
 `install-datapack` requires `--game-path` and an existing world directory `saves/<WORLD>/`; it is never created.
 
+With `--deps`, only **required** dependencies are installed. Any required dependency that could not be installed is reported on stderr:
+
+```
+!Warn: skipped required dependency <project_id> (no_compatible_version)
+```
+
+Reasons: `project_unresolved`, `no_compatible_version`, `unsupported_content_type`. All installed files are listed on stdout.
+
 ```sh
 rml modrinth install sodium --game-path ./game --mc 1.21.1 --loader fabric --deps
 rml modrinth install-version <VERSION_ID> --install-dir ./game/mods
@@ -136,9 +159,11 @@ rml modrinth search sodium -j | jq '.hits[].title'
 rml modrinth project sodium -j | wl-copy
 ```
 
+For install commands the JSON is an `InstallResult` with `installed` and `skipped` arrays.
+
 ## Errors
 
-API, network, hash-mismatch and filesystem errors are printed to stderr with the `Status::Err` prefix; the exit path is normal (no panic). With `-j`, errors still go to stderr, so stdout stays valid JSON on success.
+API, network, hash-mismatch and filesystem errors are printed to stderr with the `Status::Err` prefix; the exit path is normal (no panic). With `-j`, errors still go to stderr, so stdout stays valid JSON on success. Skipped dependencies from `--deps` are warnings on stderr and do not change the exit path.
 
 ## See also
 
