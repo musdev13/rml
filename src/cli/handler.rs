@@ -7,6 +7,8 @@ use crate::cli::commands::modloaders::ModloadersCommands;
 use crate::cli::commands::modloaders::fabric::FabricCommands;
 #[cfg(feature = "neoforge")]
 use crate::cli::commands::modloaders::neoforge::NeoforgeCommands;
+#[cfg(feature = "modrinth")]
+use crate::cli::commands::modrinth::ModrinthCommands;
 use crate::cli::commands::{self, Commands, versions::VersionsCommands};
 use clap::Parser;
 
@@ -118,6 +120,61 @@ pub async fn handle_cli() -> bool {
                     }
                 }
             },
+            #[cfg(feature = "modrinth")]
+            Commands::Modrinth(m) => {
+                let json = m.json;
+                let game_path = m.game_path.clone();
+                match m.subcommand {
+                    ModrinthCommands::Search(args) => {
+                        commands::modrinth::search::handler(args, json).await;
+                    }
+                    ModrinthCommands::Project(args) => {
+                        commands::modrinth::project::handler(args, json).await;
+                    }
+                    ModrinthCommands::ProjectByHash(args) => {
+                        commands::modrinth::project_by_hash::handler(args, json).await;
+                    }
+                    ModrinthCommands::Versions(args) => {
+                        commands::modrinth::versions::handler(args, json).await;
+                    }
+                    ModrinthCommands::Version(args) => {
+                        commands::modrinth::version::handler(args, json).await;
+                    }
+                    ModrinthCommands::VersionByHash(args) => {
+                        commands::modrinth::version_by_hash::handler(args, json).await;
+                    }
+                    ModrinthCommands::Deps(args) => {
+                        commands::modrinth::deps::handler(args, json).await;
+                    }
+                    ModrinthCommands::Members(args) => {
+                        commands::modrinth::members::handler(args, json).await;
+                    }
+                    ModrinthCommands::User(args) => {
+                        commands::modrinth::user::handler(args, json).await;
+                    }
+                    ModrinthCommands::UserProjects(args) => {
+                        commands::modrinth::user_projects::handler(args, json).await;
+                    }
+                    ModrinthCommands::Team(args) => {
+                        commands::modrinth::team::handler(args, json).await;
+                    }
+                    ModrinthCommands::Tags(args) => {
+                        commands::modrinth::tags::handler(args, json).await;
+                    }
+                    ModrinthCommands::Install(args) => {
+                        commands::modrinth::install::handler(args, game_path, json).await;
+                    }
+                    ModrinthCommands::InstallVersion(args) => {
+                        commands::modrinth::install_version::handler(args, game_path, json).await;
+                    }
+                    ModrinthCommands::InstallHash(args) => {
+                        commands::modrinth::install_hash::handler(args, game_path, json).await;
+                    }
+                    ModrinthCommands::InstallDatapack(args) => {
+                        commands::modrinth::install_datapack::handler(args, game_path, json).await;
+                    }
+                }
+            }
             #[cfg(any(feature = "fabric", feature = "neoforge"))]
             Commands::Modloaders { subcommand } => match subcommand {
                 #[cfg(feature = "fabric")]
