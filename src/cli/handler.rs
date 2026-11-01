@@ -9,6 +9,12 @@ use crate::cli::commands::modloaders::fabric::FabricCommands;
 use crate::cli::commands::modloaders::neoforge::NeoforgeCommands;
 #[cfg(feature = "modrinth")]
 use crate::cli::commands::modrinth::ModrinthCommands;
+#[cfg(any(feature = "resman-mods", feature = "resman-resourcepacks"))]
+use crate::cli::commands::resman::ResmanCommands;
+#[cfg(feature = "resman-mods")]
+use crate::cli::commands::resman::mods::ModsCommands;
+#[cfg(feature = "resman-resourcepacks")]
+use crate::cli::commands::resman::resourcepacks::ResourcepacksCommands;
 use crate::cli::commands::{self, Commands, versions::VersionsCommands};
 use clap::Parser;
 
@@ -119,6 +125,45 @@ pub async fn handle_cli() -> bool {
                         }
                     }
                 }
+            },
+            #[cfg(any(feature = "resman-mods", feature = "resman-resourcepacks"))]
+            Commands::Resman(r) => match r.subcommand {
+                #[cfg(feature = "resman-mods")]
+                ResmanCommands::Mods(m) => match m.subcommand {
+                    ModsCommands::List(a) => {
+                        commands::resman::mods::list::handler(a).await;
+                    }
+                    ModsCommands::Info(a) => {
+                        commands::resman::mods::info::handler(a).await;
+                    }
+                    ModsCommands::Enable(a) => {
+                        commands::resman::mods::toggle::handler(
+                            a,
+                            commands::resman::mods::toggle::Action::Enable,
+                        );
+                    }
+                    ModsCommands::Disable(a) => {
+                        commands::resman::mods::toggle::handler(
+                            a,
+                            commands::resman::mods::toggle::Action::Disable,
+                        );
+                    }
+                    ModsCommands::Toggle(a) => {
+                        commands::resman::mods::toggle::handler(
+                            a,
+                            commands::resman::mods::toggle::Action::Toggle,
+                        );
+                    }
+                },
+                #[cfg(feature = "resman-resourcepacks")]
+                ResmanCommands::Resourcepacks(rp) => match rp.subcommand {
+                    ResourcepacksCommands::List(a) => {
+                        commands::resman::resourcepacks::list::handler(a).await;
+                    }
+                    ResourcepacksCommands::Info(a) => {
+                        commands::resman::resourcepacks::info::handler(a).await;
+                    }
+                },
             },
             #[cfg(feature = "modrinth")]
             Commands::Modrinth(m) => {
