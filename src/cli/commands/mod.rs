@@ -4,6 +4,7 @@ pub mod login;
 pub mod modloaders;
 #[cfg(feature = "modrinth")]
 pub mod modrinth;
+pub mod resman;
 pub mod run;
 pub mod test;
 pub mod versions;
@@ -14,6 +15,7 @@ use login::LoginCommands;
 use modloaders::ModloadersCommands;
 #[cfg(feature = "modrinth")]
 use modrinth::ModrinthArgs;
+use resman::ResmanArgs;
 use run::RunArgs;
 use versions::VersionsCommands;
 
@@ -30,6 +32,7 @@ pub enum Commands {
         subcommand: VersionsCommands,
     },
     Run(RunArgs),
+    Resman(ResmanArgs),
     Login {
         #[command(subcommand)]
         subcommand: LoginCommands,

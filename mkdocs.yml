@@ -48,3 +48,6 @@ nav:
           - ms: pages/commands/login/ms.md
       - run: pages/commands/run.md
       - modrinth: pages/commands/modrinth.md
+      - resman:
+          - mods: pages/commands/resman/mods.md
+          - resourcepacks: pages/commands/resman/resourcepacks.md
